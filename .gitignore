@@ -1,0 +1,15 @@
+#ignore test files in this folder
+20210920_isoformcat_noEnds.pdf
+20210921_isoformcat_noEnds.pdf
+20210921_isoformcat_reads.pdf
+20210923_bedTest.bed
+20210923_isoformcat.pdf
+2021jul_fastaFetch
+2021nov_monoExonFix
+ALS2714_Test
+ALS_2714_C030
+colors.pptx
+tappAS_test
+testDB.py
+testSampleA_classification.txt
+testSampleA_genePred.txt
