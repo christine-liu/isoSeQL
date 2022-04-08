@@ -15,10 +15,16 @@ def main():
 	parser.add_argument("--sampleConfig", help="path to sample config file")
 	parser.add_argument("--expConfig", help="path to exp config file")
 	parser.add_argument("--db", help="path to database")
+	parser.add_argument("--sc", default=None, help='path to annotated csv')
 
 	args=parser.parse_args()
 	classifInfo=fileParse.parse_classification(args.classif)
 	genePredInfo=fileParse.parse_genePred(args.genePred)
+	if args.sc:
+		singlecell=True
+		singlecellInfo=fileParse.parse_singleCell(args.sc)
+	else:
+		singlecell=False
 
 	if not os.path.isfile(args.db):
 		sqlDB.make_db(args.db)

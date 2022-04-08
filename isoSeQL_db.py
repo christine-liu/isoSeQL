@@ -6,10 +6,12 @@ import csv
 def make_db(database):
 	conn=sqlite3.connect(database)
 	c=conn.cursor()
+	c.execute("CREATE TABLE versionInfo (name TEXT PRIMARY KEY, visoSeQL TEXT)")
+	c.execute("INSERT INTO versionInfo(name, visoSeQL) VALUES (?,?)", (database, 'v1.0.1'))
 	c.execute("CREATE TABLE isoform (id INTEGER PRIMARY KEY, chr TEXT, strand TEXT, junctions TEXT, gene TEXT, iso_exons INTEGER, subcategory TEXT, canonical TEXT, IEJ INTEGER, category TEXT, UNIQUE(chr, strand, junctions, gene))")
 	c.execute("CREATE TABLE isoform_ends (id INTEGER PRIMARY KEY, isoform_id INTEGER, chr TEXT, start INTEGER, end INTEGER, exp INTEGER, read_count INTEGER, ex_sizes TEXT, ex_starts TEXT, FOREIGN KEY(isoform_id) REFERENCES isoform(id), FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(isoform_id, exp, start, end))")
 	c.execute("CREATE TABLE counts (id INTEGER PRIMARY KEY, isoform_id INTEGER, exp INTEGER, read_count INTEGER, FOREIGN KEY(isoform_id) REFERENCES isoform(id),FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(isoform_id, exp))")
-	c.execute("CREATE TABLE exp (id INTEGER PRIMARY KEY, sample_id INTEGER, RIN REAL, seq_date DATE, platform TEXT, vMap TEXT, vReference TEXT, vAnnot TEXT, vLima TEXT, vCCS TEXT, vIsoseq3 TEXT, vCupcake TEXT, vSQANTI TEXT, exp_name TEXT, FOREIGN KEY(sample_id) REFERENCES sampleData(id) UNIQUE(sample_id, RIN, seq_date, platform, vMap, vReference, vAnnot, vLima, vCCS, vIsoseq3, vCupcake, vSQANTI, exp_name))")
+	c.execute("CREATE TABLE exp (id INTEGER PRIMARY KEY, sample_id INTEGER, RIN REAL, seq_date DATE, platform TEXT, method, TEXT, vMap TEXT, vReference TEXT, vAnnot TEXT, vLima TEXT, vCCS TEXT, vIsoseq3 TEXT, vCupcake TEXT, vSQANTI TEXT, exp_name TEXT, FOREIGN KEY(sample_id) REFERENCES sampleData(id) UNIQUE(sample_id, RIN, seq_date, platform, method, vMap, vReference, vAnnot, vLima, vCCS, vIsoseq3, vCupcake, vSQANTI, exp_name))")
 	c.execute("CREATE TABLE sampleData (id INTEGER PRIMARY KEY, sample_name TEXT, tissue TEXT, disease TEXT, age INTEGER, sex TEXT,UNIQUE(sample_name, tissue, disease, age, sex))")
 	c.execute("CREATE TABLE PBID (id INTEGER PRIMARY KEY, PBID TEXT, exp INTEGER, isoform_id INTEGER, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(isoform_id) REFERENCES isoform(id), UNIQUE(PBID, exp, isoform_id))")
 	c.execute("CREATE TABLE txID (id INTEGER PRIMARY KEY, tx TEXT, exp INTEGER, isoform_id INTEGER, gene TEXT, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(isoform_id) REFERENCES isoform(id), UNIQUE(tx, exp, isoform_id))")
@@ -41,10 +43,10 @@ def addExpData(database, expConfig, sampleID): #returns expID for use later
 	file=open(expConfig, "rt")
 	expRead=csv.DictReader(file)
 	for row in expRead:
-		c.execute('SELECT id FROM exp WHERE sample_id = ? AND RIN = ? AND seq_date = ? AND platform = ? AND vMap = ? AND vReference = ? AND vAnnot = ? AND vLima = ? AND vCCS = ? AND vIsoseq3 = ? AND vCupcake = ? AND vSQANTI = ? AND exp_name = ?', (sampleID, row['RIN'], row['date'], row['platform'], row['vMap'], row['vReference'], row['vAnnot'], row['vLima'], row['vCCS'], row['vIsoseq3'], row['vCupcake'], row['vSQANTI'], row['exp_name'],))
+		c.execute('SELECT id FROM exp WHERE sample_id = ? AND RIN = ? AND seq_date = ? AND platform = ? AND method = ? AND vMap = ? AND vReference = ? AND vAnnot = ? AND vLima = ? AND vCCS = ? AND vIsoseq3 = ? AND vCupcake = ? AND vSQANTI = ? AND exp_name = ?', (sampleID, row['RIN'], row['date'], row['platform'], row['method'], row['vMap'], row['vReference'], row['vAnnot'], row['vLima'], row['vCCS'], row['vIsoseq3'], row['vCupcake'], row['vSQANTI'], row['exp_name'],))
 		expID = c.fetchall()
 		if len(expID) == 0:
-			c.execute("INSERT INTO exp(sample_id, RIN, seq_date, platform, vMap, vReference, vAnnot, vLima, vCCS, vIsoseq3, vCupcake, vSQANTI, exp_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (sampleID, row['RIN'], row['date'], row['platform'], row['vMap'], row['vReference'], row['vAnnot'], row['vLima'], row['vCCS'], row['vIsoseq3'], row['vCupcake'], row['vSQANTI'], row['exp_name'],))
+			c.execute("INSERT INTO exp(sample_id, RIN, seq_date, platform, method, vMap, vReference, vAnnot, vLima, vCCS, vIsoseq3, vCupcake, vSQANTI, exp_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (sampleID, row['RIN'], row['date'], row['platform'], row['method'], row['vMap'], row['vReference'], row['vAnnot'], row['vLima'], row['vCCS'], row['vIsoseq3'], row['vCupcake'], row['vSQANTI'], row['exp_name'],))
 			expID=c.lastrowid
 		else:
 			expID = "Already in database"

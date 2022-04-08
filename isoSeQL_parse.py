@@ -3,6 +3,7 @@
 import sqlite3
 import argparse
 import csv
+from collections import defaultdict
 
 class Classif:
 	def __init__(self,iso_id,cat,gene,transcript,ref_exons,tx_exons,subcat,canonical,count,tx_length):
@@ -39,6 +40,19 @@ class Struct:
 		exStart_string = [str(i) for i in self.exStarts]
 		exEnd_string = [str(i) for i in self.exEnds]
 		return self.iso_id+'\t'+self.chrom+'\t'+self.strand+'\t'+str(self.start)+'\t'+str(self.end)+'\t'+','.join(exStart_string)+'\t'+','.join(exEnd_string)+'\t'+self.exSizes+'\t' + self.exBedStarts+'\n'
+
+class SingleCell:
+	def __init__(self, iso_id, barcode, celltype):
+		self.iso_id = iso_id
+		self.barcode = barcode
+		self.celltype = celltype
+		self.UMIs = set()
+
+	def addUMI(self, UMI):
+		self.UMIs.add(UMI)
+
+	def printObj(self):
+		return self.iso_id+'\t'+self.barcode+'\t'+self.celltype+'\t'+str(self.UMIs)+'\n'
 
 def parse_classification(classif):
 	classFile = open(classif, "rt")
@@ -80,11 +94,12 @@ def parse_singleCell(sc):
 		barcode=row['BC']
 		UMI=row['UMI']
 		celltype=row['Celltype']
-		scKey=barcode+"_"+celltype
 		if isoform in scDict:
-			scDict[isoform][scKey].add(UMI)
+			scDict[isoform][barcode].addUMI(UMI)
 		else:
-			scDict[isoform]=defaultdict(lambda:set())
+			scDict[isoform]=defaultdict()
+			scDict[isoform][barcode]=SingleCell(isoform,barcode,celltype)
+			scDict[isoform][barcode].addUMI(UMI)
 	return scDict
 
 
