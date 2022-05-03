@@ -104,7 +104,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 
 						#is it any faster to parse through all isoforms and then each cell associated with each isoform vs each cell and then each isoform for every cell?
 			else:
-				break
+				continue
 
 
 	for isoform in observedIso:
