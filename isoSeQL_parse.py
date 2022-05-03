@@ -117,6 +117,6 @@ def parse_singleCell(sc):
 			UMIDict[isoform]=defaultdict(set)
 			UMIDict[isoform][barcode].add(UMI)
 		if barcode not in barcodeDict:
-			barcodeDict[barcode]=[celltype]
+			barcodeDict[barcode]=celltype
 	return barcodeDict,UMIDict
 
