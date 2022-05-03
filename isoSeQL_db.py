@@ -85,7 +85,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 			isoEndID=c.lastrowid
 		else:
 			isoEndID=isoEndID[0][0] #if so, return id
-		c.execute('INSERT INTO end_counts(ends_id, exp, read_count) VALUES (?,?,?)', (isoEndID, expID, classif[iso].count)) #should be no repeats of exact isoforms in an exp, so can just directly add counts to table
+		c.execute('INSERT INTO ends_counts(ends_id, exp, read_count) VALUES (?,?,?)', (isoEndID, expID, classif[iso].count)) #should be no repeats of exact isoforms in an exp, so can just directly add counts to table
 		c.execute('INSERT INTO PBID(PBID, exp, isoform_id) VALUES (?,?,?)', (iso, expID, isoID)) #add in PBID info to match back to original SQANTI3 output files
 		if classif[iso].cat == "full-splice_match" or classif[iso].cat=="incomplete-splice_match":
 			c.execute('INSERT OR IGNORE INTO txID(isoform_id, exp, tx, gene) VALUES (?,?,?,?)', (isoID, expID, classif[iso].transcript, classif[iso].gene)) #keep track of txIDs
