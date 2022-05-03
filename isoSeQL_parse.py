@@ -41,18 +41,18 @@ class Struct:
 		exEnd_string = [str(i) for i in self.exEnds]
 		return self.iso_id+'\t'+self.chrom+'\t'+self.strand+'\t'+str(self.start)+'\t'+str(self.end)+'\t'+','.join(exStart_string)+'\t'+','.join(exEnd_string)+'\t'+self.exSizes+'\t' + self.exBedStarts+'\n'
 
-class SingleCell:
-	def __init__(self, iso_id, barcode, celltype):
-		self.iso_id = iso_id
-		self.barcode = barcode
-		self.celltype = celltype
-		self.UMIs = set()
+# class SingleCell:
+# 	def __init__(self, iso_id, barcode, celltype):
+# 		self.iso_id = iso_id
+# 		self.barcode = barcode
+# 		self.celltype = celltype
+# 		self.UMIs = set()
 
-	def addUMI(self, UMI):
-		self.UMIs.add(UMI)
+# 	def addUMI(self, UMI):
+# 		self.UMIs.add(UMI)
 
-	def printObj(self):
-		return self.iso_id+'\t'+self.barcode+'\t'+self.celltype+'\t'+str(self.UMIs)+'\n'
+# 	def printObj(self):
+# 		return self.iso_id+'\t'+self.barcode+'\t'+self.celltype+'\t'+str(self.UMIs)+'\n'
 
 def parse_classification(classif):
 	classFile = open(classif, "rt")
@@ -86,23 +86,37 @@ def parse_genePred(genePred):
 	return genePredDict
 
 def parse_singleCell(sc):
-	scDict={}
+	# scDict={}
+	# scFile=open(sc, "r")
+	# scRead=csv.DictReader(scFile)
+	# for row in scRead:
+	# 	isoform=row['pbid']
+	# 	barcode=row['BC']
+	# 	UMI=row['UMI']
+	# 	celltype=row['Celltype']
+	# 	if isoform in scDict:
+	# 		scDict[isoform][barcode].addUMI(UMI)
+	# 	else:
+	# 		scDict[isoform]=defaultdict()
+	# 		scDict[isoform][barcode]=SingleCell(isoform,barcode,celltype)
+	# 		scDict[isoform][barcode].addUMI(UMI)
+	# return scDict
+	# #want to return two dictionaries - one with just barcode and celltype (to population scInfo table) and then one with sets of UMIs for providing counts
 	scFile=open(sc, "r")
 	scRead=csv.DictReader(scFile)
+	barcodeDict={}
+	UMIDict={}
 	for row in scRead:
 		isoform=row['pbid']
-		barcode=row['BC']
+		barcode=row['BC'] #should this be BCrev? b/c that's how cellranger and 10x report it?
 		UMI=row['UMI']
 		celltype=row['Celltype']
 		if isoform in scDict:
-			scDict[isoform][barcode].addUMI(UMI)
+			UMIDict[isoform][barcode].add(UMI)
 		else:
-			scDict[isoform]=defaultdict()
-			scDict[isoform][barcode]=SingleCell(isoform,barcode,celltype)
-			scDict[isoform][barcode].addUMI(UMI)
-	return scDict
-
-
-
-
+			UMIDict[isoform]=defaultdict(set)
+			UMIDict[isoform][barcode].add(UMI)
+		if barcode not in barcodeDict:
+			barcodeDict[barcode]=[celltype]
+	return barcodeDict,UMIDict
 

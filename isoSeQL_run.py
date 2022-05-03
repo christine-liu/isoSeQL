@@ -21,10 +21,7 @@ def main():
 	classifInfo=fileParse.parse_classification(args.classif)
 	genePredInfo=fileParse.parse_genePred(args.genePred)
 	if args.sc:
-		singlecell=True
-		singlecellInfo=fileParse.parse_singleCell(args.sc)
-	else:
-		singlecell=False
+		scInfo,UMIs=fileParse.parse_singleCell(args.sc)
 
 	if not os.path.isfile(args.db):
 		sqlDB.make_db(args.db)
@@ -34,7 +31,7 @@ def main():
 		print("\n***EXIT***\nExperiment and its data have already been added into this database. No isoforms have been added.\n**********\n")
 		sys.exit()
 	else:
-		sqlDB.addIsoforms(args.db, classifInfo, genePredInfo, expID)
+		sqlDB.addIsoforms(args.db, classifInfo, genePredInfo, expID, scInfo, UMIs)
 
 
 

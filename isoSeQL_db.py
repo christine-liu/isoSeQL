@@ -9,12 +9,17 @@ def make_db(database):
 	c.execute("CREATE TABLE versionInfo (name TEXT PRIMARY KEY, visoSeQL TEXT)")
 	c.execute("INSERT INTO versionInfo(name, visoSeQL) VALUES (?,?)", (database, 'v1.0.1'))
 	c.execute("CREATE TABLE isoform (id INTEGER PRIMARY KEY, chr TEXT, strand TEXT, junctions TEXT, gene TEXT, iso_exons INTEGER, subcategory TEXT, canonical TEXT, IEJ INTEGER, category TEXT, UNIQUE(chr, strand, junctions, gene))")
-	c.execute("CREATE TABLE isoform_ends (id INTEGER PRIMARY KEY, isoform_id INTEGER, chr TEXT, start INTEGER, end INTEGER, exp INTEGER, read_count INTEGER, ex_sizes TEXT, ex_starts TEXT, FOREIGN KEY(isoform_id) REFERENCES isoform(id), FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(isoform_id, exp, start, end))")
+	c.execute("CREATE TABLE isoform_ends (id INTEGER PRIMARY KEY, isoform_id INTEGER, chr TEXT, start INTEGER, end INTEGER, ex_sizes TEXT, ex_starts TEXT, FOREIGN KEY(isoform_id) REFERENCES isoform(id), UNIQUE(isoform_id, chr, start, end))")
 	c.execute("CREATE TABLE counts (id INTEGER PRIMARY KEY, isoform_id INTEGER, exp INTEGER, read_count INTEGER, FOREIGN KEY(isoform_id) REFERENCES isoform(id),FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(isoform_id, exp))")
-	c.execute("CREATE TABLE exp (id INTEGER PRIMARY KEY, sample_id INTEGER, RIN REAL, seq_date DATE, platform TEXT, method, TEXT, vMap TEXT, vReference TEXT, vAnnot TEXT, vLima TEXT, vCCS TEXT, vIsoseq3 TEXT, vCupcake TEXT, vSQANTI TEXT, exp_name TEXT, FOREIGN KEY(sample_id) REFERENCES sampleData(id) UNIQUE(sample_id, RIN, seq_date, platform, method, vMap, vReference, vAnnot, vLima, vCCS, vIsoseq3, vCupcake, vSQANTI, exp_name))")
+	c.execute("CREATE TABLE ends_counts (ends_id INTEGER, exp INTEGER, read_count INTEGER, FOREIGN KEY(ends_id) REFERENCES isoform_ends(id), FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(ends_id, exp, read_count))")
+	c.execute("CREATE TABLE exp (id INTEGER PRIMARY KEY, sample_id INTEGER, RIN REAL, seq_date DATE, platform TEXT, method, TEXT, vMap TEXT, vReference TEXT, vAnnot TEXT, vLima TEXT, vCCS TEXT, vIsoseq3 TEXT, vCupcake TEXT, vSQANTI TEXT, exp_name TEXT, FOREIGN KEY(sample_id) REFERENCES sampleData(id), UNIQUE(sample_id, RIN, seq_date, platform, method, vMap, vReference, vAnnot, vLima, vCCS, vIsoseq3, vCupcake, vSQANTI, exp_name))")
 	c.execute("CREATE TABLE sampleData (id INTEGER PRIMARY KEY, sample_name TEXT, tissue TEXT, disease TEXT, age INTEGER, sex TEXT,UNIQUE(sample_name, tissue, disease, age, sex))")
 	c.execute("CREATE TABLE PBID (id INTEGER PRIMARY KEY, PBID TEXT, exp INTEGER, isoform_id INTEGER, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(isoform_id) REFERENCES isoform(id), UNIQUE(PBID, exp, isoform_id))")
 	c.execute("CREATE TABLE txID (id INTEGER PRIMARY KEY, tx TEXT, exp INTEGER, isoform_id INTEGER, gene TEXT, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(isoform_id) REFERENCES isoform(id), UNIQUE(tx, exp, isoform_id))")
+	c.execute("CREATE TABLE scInfo (id INTEGER PRIMARY KEY, exp INTEGER, barcode TEXT, celltype TEXT, FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(id, exp, barcode, celltype))")
+	c.execute("CREATE TABLE scCounts (isoform_id INTEGER, scID INTEGER, read_count INTEGER, FOREIGN KEY(isoform_id) REFERENCES isoform(id), FOREIGN KEY(scID) REFERENCES scInfo(id), UNIQUE(isoform_id, scID, read_count))")
+	c.execute("CREATE TABLE scCounts_ends (ends_id INTEGER, scID INTEGER, read_count INTEGER, FOREIGN KEY(ends_id) REFERENCES isoform_ends(id), FOREIGN KEY(scID) REFERENCES scInfo(id), UNIQUE(ends_id, scID, read_count))")
+
 	conn.commit()
 	conn.close()
 
@@ -54,27 +59,64 @@ def addExpData(database, expConfig, sampleID): #returns expID for use later
 	conn.close()
 	return expID
 
-def addIsoforms(database, classif, genePred, expID):
+def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 	conn=sqlite3.connect(database)
 	c=conn.cursor()
-	observedIsoIDs = set()
+	observedIso=set()
+	if scInfo: #add all barcode/celltype info into scInfo table
+			for barcode in scInfo.keys():
+				c.execute('SELECT id FROM scInfo WHERE exp = ? AND barcode = ? AND celltype = ?', (expID, barcode, scInfo[barcode],))
+				scID = c.fetchall()
+				if len(scID) == 0:
+					c.execute('INSERT INTO scInfo(exp, barcode, celltype) VALUES (?,?,?)', (expID, barcode, scInfo[barcode],))
 	for iso in classif.keys():
-		c.execute('SELECT id FROM isoform WHERE chr = ? AND strand = ? AND junctions = ? and gene = ?', (genePred[iso].chrom, genePred[iso].strand, str(genePred[iso].junctions), classif[iso].gene))
+		c.execute('SELECT id FROM isoform WHERE chr = ? AND strand = ? AND junctions = ? and gene = ?', (genePred[iso].chrom, genePred[iso].strand, str(genePred[iso].junctions), classif[iso].gene)) #check if isoform is already in table 
 		isoID = c.fetchall()
 		if len(isoID) == 0:
-			c.execute('INSERT INTO isoform(chr, strand, junctions, gene, iso_exons, subcategory, canonical, IEJ, category) VALUES (?,?,?,?,?,?,?,?,?)', (genePred[iso].chrom, genePred[iso].strand, str(genePred[iso].junctions), classif[iso].gene, classif[iso].tx_exons, classif[iso].subcat, classif[iso].canonical, classif[iso].IEJ, classif[iso].cat,))
+			c.execute('INSERT INTO isoform(chr, strand, junctions, gene, iso_exons, subcategory, canonical, IEJ, category) VALUES (?,?,?,?,?,?,?,?,?)', (genePred[iso].chrom, genePred[iso].strand, str(genePred[iso].junctions), classif[iso].gene, classif[iso].tx_exons, classif[iso].subcat, classif[iso].canonical, classif[iso].IEJ, classif[iso].cat,)) #if not add into table and return id 
 			isoID=c.lastrowid
 		else:
-			isoID=isoID[0][0]
-		observedIsoIDs.add(isoID)
-		c.execute('INSERT INTO isoform_ends(isoform_id, chr, start, end, exp, read_count, ex_sizes, ex_starts) VALUES (?,?,?,?,?,?,?,?)', (isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, expID, classif[iso].count, genePred[iso].exSizes, genePred[iso].exBedStarts))
-		c.execute('INSERT INTO PBID(PBID, exp, isoform_id) VALUES (?,?,?)', (iso, expID, isoID))
+			isoID=isoID[0][0] #if so, return id
+		observedIso.add(isoID)
+		c.execute('SELECT id FROM isoform_ends WHERE isoform_id = ? AND chr = ? AND start = ? AND end = ? AND ex_sizes = ? AND ex_starts = ?', (isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #check if exact isoform already in table
+		isoEndID = c.fetchall()
+		if len(isoEndID) == 0:
+			c.execute('INSERT INTO isoform_ends(isoform_id, chr, start, end, ex_sizes, ex_starts) VALUES (?,?,?,?,?,?)', (isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #if not add into table and return id
+			isoEndID=c.lastrowid
+		else:
+			isoEndID=isoEndID[0][0] #if so, return id
+		c.execute('INSERT INTO end_counts(ends_id, exp, read_count) VALUES (?,?,?)', (isoEndID, expID, classif[iso].count)) #should be no repeats of exact isoforms in an exp, so can just directly add counts to table
+		c.execute('INSERT INTO PBID(PBID, exp, isoform_id) VALUES (?,?,?)', (iso, expID, isoID)) #add in PBID info to match back to original SQANTI3 output files
 		if classif[iso].cat == "full-splice_match" or classif[iso].cat=="incomplete-splice_match":
-			c.execute('INSERT OR IGNORE INTO txID(isoform_id, exp, tx, gene) VALUES (?,?,?,?)', (isoID, expID, classif[iso].transcript, classif[iso].gene))
-	for id in observedIsoIDs:
-		c.execute('SELECT SUM(read_count) FROM isoform_ends WHERE isoform_id = ? AND read_count != "NA" AND exp = ?', (id,expID))
+			c.execute('INSERT OR IGNORE INTO txID(isoform_id, exp, tx, gene) VALUES (?,?,?,?)', (isoID, expID, classif[iso].transcript, classif[iso].gene)) #keep track of txIDs
+		if UMIs:
+			for barcode in UMIs[iso].keys():
+				c.execute('SELECT id FROM scInfo WHERE exp = ? AND barcode = ?', (expID, barcode))
+				scID = c.fetchall()
+				if len(scID) == 0:
+					print("ERROR: missing single cell info")
+					exit
+				else:
+					scID = scID[0][0]
+					c.execute('INSERT INTO scCounts_ends(ends_id, scID, read_count) VALUES (?,?,?)', (isoEndID, scID, len(UMIs[iso][barcode],)))
+					#need to check then for each isoform and where to add the counts, all isoforms should be in the database b/c parse classif first
+
+					#is it any faster to parse through all isoforms and then each cell associated with each isoform vs each cell and then each isoform for every cell?
+
+	for isoform in observedIso:
+		#query counts from matching isoform_ends ids and sum to get counts to add to counts table (and correspondingly for single-cell info)
+		c.execute('SELECT SUM(read_count) FROM ends_counts WHERE exp = ? AND ends_id IN (SELECT id FROM isoform_ends WHERE isoform_id = ?)', (expID, isoform,))
 		sum_counts = int(c.fetchall()[0][0])
-		c.execute('INSERT INTO counts(isoform_id, exp, read_count) VALUES (?,?,?)', (id, expID, sum_counts))
+		c.execute('INSERT INTO counts(isoform_id, exp, read_count) VALUES (?,?,?)', (isoform, expID, sum_counts,)) #now that have counted all exact versions of isoform, can add counts
+		if UMIs:
+			c.execute('SELECT scID,SUM(read_count) FROM scCounts_ends WHERE scID IN (SELECT id FROM scInfo WHERE exp = ?) AND ends_id IN (SELECT id FROM isoform_ends WHERE isoform_id = ?) GROUP BY scID', (expID, isoform,))
+			count_list=c.fetchall()
+			for cell in count_list:
+				c.execute("INSERT INTO scCounts(isoform_id, scID, read_count) VALUES (?,?,?)", (isoform, cell[0], cell[1],))
+
+
+
+
 	conn.commit()
 	conn.close()
 
