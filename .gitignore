@@ -13,3 +13,4 @@ tappAS_test
 testDB.py
 testSampleA_classification.txt
 testSampleA_genePred.txt
+countnotes.py

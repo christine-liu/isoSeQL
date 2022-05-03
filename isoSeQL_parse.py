@@ -111,7 +111,7 @@ def parse_singleCell(sc):
 		barcode=row['BC'] #should this be BCrev? b/c that's how cellranger and 10x report it?
 		UMI=row['UMI']
 		celltype=row['Celltype']
-		if isoform in scDict:
+		if isoform in UMIDict:
 			UMIDict[isoform][barcode].add(UMI)
 		else:
 			UMIDict[isoform]=defaultdict(set)
