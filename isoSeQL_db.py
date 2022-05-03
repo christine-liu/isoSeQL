@@ -65,7 +65,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 	observedIso=set()
 	if scInfo: #add all barcode/celltype info into scInfo table
 			for barcode in scInfo.keys():
-				c.execute('SELECT id FROM scInfo WHERE exp = ? AND barcode = ? AND celltype = ?', (expID, barcode, scInfo[barcode],))
+				c.execute('SELECT id FROM scInfo WHERE exp = ? AND barcode = ? AND celltype = ?', (expID, barcode, scInfo[barcode]))
 				scID = c.fetchall()
 				if len(scID) == 0:
 					c.execute('INSERT INTO scInfo(exp, barcode, celltype) VALUES (?,?,?)', (expID, barcode, scInfo[barcode],))
