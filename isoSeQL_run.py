@@ -6,7 +6,7 @@ import os
 import isoSeQL_db as sqlDB
 import isoSeQL_parse as fileParse
 import sys
-
+import timeit
 
 def main():
 	parser=argparse.ArgumentParser(description="parse SQANTI3 output to add isoforms to database")
@@ -38,4 +38,7 @@ def main():
 
 
 if __name__ =='__main__':
+	start=timeit.default_timer()
 	main()
+	stop=timeit.default_timer()
+	print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
