@@ -170,7 +170,7 @@ def tappASgff(db, exp, out):
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
-	gff3TX=pd.read_sql("SELECT DISTINCT i.id, i.chr, i.strand, i.gene, i.junctions, i.category, x.start, x.end, x.ex_sizes, t.tx FROM isoform i INNER JOIN isoform_ends x on i.id=x.isoform_id LEFT OUTER JOIN txID t ON i.id=t.isoform_id WHERE x.exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	gff3TX=pd.read_sql("SELECT DISTINCT i.id, i.chr, i.strand, i.gene, i.junctions, i.category, x.start, x.end, x.ex_sizes, t.tx FROM isoform i LEFT OUTER JOIN txID t on i.id=t.isoform_id INNER JOIN isoform_ends x on i.id=x.isoform_id WHERE x.isoform_id IN (SELECT e.ends_id FROM ends_counts e WHERE e.exp IN (%s)) " % ','.join('?' for i in exp_list), conn, params=exp_list)
 	gff3TX['isoform'] = gff3TX['id'].map(str)+'_'+gff3TX['start'].map(str)+'_'+gff3TX['end'].map(str)
 	gff3TX['tx'].replace(np.nan, "novel", inplace=True)
 	outFile = open(out, "w+")
