@@ -154,6 +154,11 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 			return
 		else:
 			varEnds_counts = pd.read_sql("SELECT isoform_id, start, end, exp, read_count FROM isoform_ends WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+
+
+			varEnds_counts = pd.read_sql("SELECT x.isoform_id, x.start, x.end, e.exp, e.read_count FROM isoform_ends x INNER JOIN ends_counts e on x.id=e.ends_id WHERE x.id IN (SELECT ends_id FROM ends_counts e WHERE exp IN (%s)) " % ','.join('?' for i in exp_list), conn, params=exp_list)
+
+
 			varEnds_counts['isoform'] = varEnds_counts['isoform_id'].map(str)+'_'+varEnds_counts['start'].map(str)+'_'+varEnds_counts['end'].map(str)
 			pivot = varEnds_counts.pivot(index="isoform", columns="exp", values="read_count")
 			pivot=pivot.fillna(0)
