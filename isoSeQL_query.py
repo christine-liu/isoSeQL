@@ -27,17 +27,17 @@ def isoprop_plot(db, exp, outPrefix):
 	prop['Proportion']=prop['COUNT(i.category)']/prop['Total']
 	fig = go.Figure()
 	fig.update_layout(
-	    template="simple_white",
-	    xaxis=dict(title_text="Exp"),
-	    yaxis=dict(title_text="Proportion"),
-	    barmode="stack",
+		template="simple_white",
+		xaxis=dict(title_text="Exp"),
+		yaxis=dict(title_text="Proportion"),
+		barmode="stack",
 	)
 	category2plot=prop.category.unique().tolist()
 	colors=[colorDict[i] for i in category2plot]
 	for r, c in zip(prop.category.unique(), colors):
-    	plot_df = prop[prop.category == r]
-    	fig.add_trace(
-    		go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=c),
+		plot_df = prop[prop.category == r]
+		fig.add_trace(
+			go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=c),
     )
     fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoPropTable.txt"
@@ -54,17 +54,17 @@ def isoprop_plot(db, exp, outPrefix):
 	prop['Proportion']=prop['SUM(c.read_count)']/prop['Total']
 	fig = go.Figure()
 	fig.update_layout(
-	    template="simple_white",
-	    xaxis=dict(title_text="Exp"),
-	    yaxis=dict(title_text="Proportion"),
-	    barmode="stack",
+		template="simple_white",
+		xaxis=dict(title_text="Exp"),
+		yaxis=dict(title_text="Proportion"),
+		barmode="stack",
 	)
 	category2plot=prop.category.unique().tolist()
 	colors=[colorDict[i] for i in category2plot]
 	for r, c in zip(prop.category.unique(), colors):
-    	plot_df = prop[prop.category == r]
-    	fig.add_trace(
-    		go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=c),
+		plot_df = prop[prop.category == r]
+		fig.add_trace(
+			go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=c),
     )
     fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoReadsPropTable.txt"
