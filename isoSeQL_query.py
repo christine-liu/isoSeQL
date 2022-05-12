@@ -40,7 +40,7 @@ def isoprop_plot(db, exp, outPrefix):
     )
 	fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoPropTable.txt"
-	prop.to_csv(tableFile, sep='\t', index=True, header=True)
+	prop.to_csv(tableFile, sep='\t', index=False, header=True)
 	print("Isoform proportions table saved: " + tableFile)
 	plotFile=outPrefix+"_isoPropPlot.pdf"
 	fig.write_image(plotFile)
@@ -67,7 +67,7 @@ def isoprop_plot(db, exp, outPrefix):
     )
 	fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoReadsPropTable.txt"
-	prop.to_csv(tableFile, sep='\t', index=True, header=True)
+	prop.to_csv(tableFile, sep='\t', index=False, header=True)
 	print("Isoform read proportions table saved: " + tableFile)
 	plotFile=outPrefix+"_isoReadsPropPlot.pdf"
 	fig.write_image(plotFile)
