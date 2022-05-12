@@ -4,13 +4,12 @@ import sqlite3
 import csv
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import datetime
 import argparse
-import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
+fig = go.Figure()
+pio.full_figure_for_development(fig,warn=False)
 
 def isoprop_plot(db, exp, outPrefix):
 	conn=sqlite3.connect(db)
