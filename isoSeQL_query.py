@@ -39,7 +39,7 @@ def isoprop_plot(db, exp, outPrefix):
 		fig.add_trace(
 			go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=c),
     )
-    fig.update_layout(xaxis_type='category')
+	fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoPropTable.txt"
 	prop.to_csv(tableFile, sep='\t', index=True, header=True)
 	print("Isoform proportions table saved: " + tableFile)
@@ -66,7 +66,7 @@ def isoprop_plot(db, exp, outPrefix):
 		fig.add_trace(
 			go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=c),
     )
-    fig.update_layout(xaxis_type='category')
+	fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoReadsPropTable.txt"
 	prop.to_csv(tableFile, sep='\t', index=True, header=True)
 	print("Isoform read proportions table saved: " + tableFile)
