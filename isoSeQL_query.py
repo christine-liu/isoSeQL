@@ -9,6 +9,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import datetime
 import argparse
+import plotly.express as px
+import plotly.graph_objects as go
 
 def isoprop_plot(db, exp, outPrefix):
 	conn=sqlite3.connect(db)
@@ -16,37 +18,61 @@ def isoprop_plot(db, exp, outPrefix):
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
+	colorDict={"full-splice_match":'#1d2f5f', 'incomplete-splice_match':'#8390FA', 'novel_in_catalog':'#6eaf46', 'novel_not_in_catalog':'#FAC748', 'antisense':'#00bcc0', 'intergenic':'#fa8800', 'genic':'#ac0000', 'genic_intron':'#0096ff', 'fusion':'#cf33ac'}
+	#isoform proportion (not counting variable ends)
 	df_prop=pd.read_sql("SELECT i.category,COUNT(i.category),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY i.category,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	pivot=df_prop.pivot(index="exp", columns="category", values="COUNT(i.category)")
-	cats = pivot.columns.tolist()
-	# cats = ['full-splice_match', 'incomplete-splice_match', 'novel_in_catalog', 'novel_not_in_catalog', 'antisense', 'genic', 'intergenic', 'fusion', 'genic_intron']
-	pivot['Total'] = pivot[cats].sum(axis=1)
-	pivot_plot=pd.DataFrame()
-	for i in cats:
-		pivot_plot['{}'.format(i)] = pivot[i]/pivot['Total']
+	calc_totals=pd.read_sql("SELECT COUNT(i.category),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	calc_totals.rename(columns={'COUNT(i.category)':'Total'}, inplace=True)
+	prop=df_prop.merge(calc_totals, on=['exp'])
+	prop['Proportion']=prop['COUNT(i.category)']/prop['Total']
+	fig = go.Figure()
+	fig.update_layout(
+	    template="simple_white",
+	    xaxis=dict(title_text="Exp"),
+	    yaxis=dict(title_text="Proportion"),
+	    barmode="stack",
+	)
+	category2plot=prop.category.unique().tolist()
+	colors=[colorDict[i] for i in category2plot]
+	for r, c in zip(prop.category.unique(), colors):
+    	plot_df = prop[prop.category == r]
+    	fig.add_trace(
+    		go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=c),
+    )
+    fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoPropTable.txt"
-	pivot_plot.to_csv(tableFile, sep='\t', index=True, header=True)
+	prop.to_csv(tableFile, sep='\t', index=True, header=True)
 	print("Isoform proportions table saved: " + tableFile)
 	plotFile=outPrefix+"_isoPropPlot.pdf"
-	ax=pivot_plot.plot.bar(stacked=True, color={'full-splice_match':'#1d2f5f', 'incomplete-splice_match':'#8390fa', 'novel_in_catalog':'#6eaf46', 'novel_not_in_catalog':'#fac748', 'antisense':'#00bcc0', 'genic':'#ac0000', 'intergenic':'#fa8800', 'fusion':'#cf33ac', 'genic_intron':'#0096ff'}).legend(bbox_to_anchor=(1,1), fontsize=8)
-	plt.subplots_adjust(right=0.6)
-	plt.savefig(plotFile)
+	fig.write_image(plotFile)
 	print("Isoform proportions plot saved: " + plotFile)
+	#by read count
 	df_exp_read = pd.read_sql("SELECT i.category,SUM(c.read_count),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY i.category,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	pivot_read = df_exp_read.pivot(index="exp", columns="category", values="SUM(c.read_count)")
-	cats_reads = pivot_read.columns.tolist()
-	pivot_read['Total'] = pivot_read[cats_reads].sum(axis=1)
-	pivot_filterReads=pd.DataFrame()
-	for i in cats:
-		pivot_filterReads['{}'.format(i)] = pivot_read[i]/pivot_read['Total']
-	readTableFile=outPrefix+"_isoReadsPropTable.txt"
-	pivot_filterReads.to_csv(readTableFile, sep='\t', index=True, header=True)
-	print("Isoform read proportions table saved: " + readTableFile)
-	readPlotFile = outPrefix+"_isoReadPropPlot.pdf"
-	ax=pivot_filterReads.plot.bar(stacked=True, color={'full-splice_match':'#1d2f5f', 'incomplete-splice_match':'#8390fa', 'novel_in_catalog':'#6eaf46', 'novel_not_in_catalog':'#fac748', 'antisense':'#00bcc0', 'genic':'#ac0000', 'intergenic':'#fa8800', 'fusion':'#cf33ac', 'genic_intron':'#0096ff'}).legend(bbox_to_anchor=(1,1), fontsize=8)
-	plt.subplots_adjust(right=0.6)
-	plt.savefig(readPlotFile)
-	print("Isoform read proportions plot saved: " + readPlotFile)
+	df_exp_read = pd.read_sql("SELECT SUM(c.read_count),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	calc_totals.rename(columns={'SUM(c.read_count)':'Total'}, inplace=True)
+	prop=df_prop.merge(calc_totals, on=['exp'])
+	prop['Proportion']=prop['SUM(c.read_count)']/prop['Total']
+	fig = go.Figure()
+	fig.update_layout(
+	    template="simple_white",
+	    xaxis=dict(title_text="Exp"),
+	    yaxis=dict(title_text="Proportion"),
+	    barmode="stack",
+	)
+	category2plot=prop.category.unique().tolist()
+	colors=[colorDict[i] for i in category2plot]
+	for r, c in zip(prop.category.unique(), colors):
+    	plot_df = prop[prop.category == r]
+    	fig.add_trace(
+    		go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=c),
+    )
+    fig.update_layout(xaxis_type='category')
+	tableFile=outPrefix+"_isoReadsPropTable.txt"
+	prop.to_csv(tableFile, sep='\t', index=True, header=True)
+	print("Isoform read proportions table saved: " + tableFile)
+	plotFile=outPrefix+"_isoReadsPropPlot.pdf"
+	fig.write_image(plotFile)
+	print("Isoform read proportions plot saved: " + plotFile)
 	return
 
 

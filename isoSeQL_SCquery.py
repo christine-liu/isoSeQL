@@ -12,6 +12,7 @@ import argparse
 import seaborn as sns
 import plotly.graph_objects as go
 import plotly.io as pio
+fig = go.Figure()
 pio.full_figure_for_development(fig,warn=False)
 
 def isoprop_plot(db, exp, outPrefix):
@@ -20,8 +21,9 @@ def isoprop_plot(db, exp, outPrefix):
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
+	colorDict={"full-splice_match":'#1d2f5f', 'incomplete-splice_match':'#8390FA', 'novel_in_catalog':'#6eaf46', 'novel_not_in_catalog':'#FAC748', 'antisense':'#00bcc0', 'intergenic':'#fa8800', 'genic':'ac0000', 'genic_intron':'#0096ff', 'fusion':'cf33ac'}
 	#by read
-	df_prop=pd.read_sql("SELECT i.category,SUM(c.read_count),s.exp,s.celltype FROM scCounts c LEFT OUTER JOIN isoform i on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY i.category,s.exp,s.celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	df_prop=pd.read_sql("SELECT i.category,SUM(c.read_count),s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY i.category,s.exp,s.celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
 	calc_totals=pd.read_sql("SELECT s.exp, SUM(c.read_count) FROM scCounts c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY s.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
 	calc_totals.rename(columns={'SUM(c.read_count)':'Total'}, inplace=True)
 	prop = df_prop.merge(calc_totals, on=["exp"])
@@ -40,7 +42,6 @@ def isoprop_plot(db, exp, outPrefix):
 	    yaxis=dict(title_text="Proportion"),
 	    barmode="stack",
 	)
-	colorDict={"full-splice_match":'#1d2f5f', 'incomplete-splice_match':'#8390FA', 'novel_in_catalog':'#6eaf46', 'novel_not_in_catalog':'#FAC748', 'antisense':'#00bcc0', 'intergenic':'#fa8800', 'genic':'ac0000', 'genic_intron':'#0096ff', 'fusion':'cf33ac'}
 	category2plot=prop.category.unique().tolist()
 	colors=[colorDict[i] for i in category2plot]
 	for r, c in zip(category2plot, colors):
@@ -67,6 +68,10 @@ def isoprop_plot(db, exp, outPrefix):
 	fig.write_image(readPlotFile)
 	print("Isoform read proportions plot saved: " + readPlotFile)
 	df_bed['name'] = df_bed['id'].map(str)+'_'+df_bed['start'].map(str)+'_'+df_bed['end'].map(str)
+
+#by isoform w/o considering variable ends
+	df_prop=pd.read_sql("SELECT category,COUNT(category), exp, celltype FROM (SELECT DISTINCT i.category, s.exp, s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY category,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	
 
 
 
