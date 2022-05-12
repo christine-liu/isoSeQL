@@ -123,7 +123,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 			barmode="stack",
 		)
 		for x in df_gene.tx.unique():
-			plot_df=df_gene[df_gene.category==x]
+			plot_df=df_gene[df_gene.tx==x]
 			fig.add_trace(go.Bar(x=df_gene.exp, y=df_gene.Proportion, name=df_gene.tx))
 		fig.update_layout(xaxis_type='category')
 		fileName=outPrefix+"_FSM_"+g+".pdf"
