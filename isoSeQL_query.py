@@ -48,9 +48,9 @@ def isoprop_plot(db, exp, outPrefix):
 	print("Isoform proportions plot saved: " + plotFile)
 	#by read count
 	df_exp_read = pd.read_sql("SELECT i.category,SUM(c.read_count),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY i.category,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	df_exp_read = pd.read_sql("SELECT SUM(c.read_count),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	calc_totals = pd.read_sql("SELECT SUM(c.read_count),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
 	calc_totals.rename(columns={'SUM(c.read_count)':'Total'}, inplace=True)
-	prop=df_prop.merge(calc_totals, on=['exp'])
+	prop=df_exp_read.merge(calc_totals, on=['exp'])
 	prop['Proportion']=prop['SUM(c.read_count)']/prop['Total']
 	fig = go.Figure()
 	fig.update_layout(
