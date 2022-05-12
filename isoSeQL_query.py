@@ -122,7 +122,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 			yaxis=dict(title_text="Proportion"),
 			barmode="stack",
 		)
-		fig.add_trace(go.Bar(x=df_gene.exp, y=df_gene.Proportion))
+		fig.add_trace(go.Bar(x=df_gene.exp, y=df_gene.Proportion, marker_color=df_gene.tx))
 		fig.update_layout(xaxis_type='category')
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
