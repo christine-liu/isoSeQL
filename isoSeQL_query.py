@@ -109,20 +109,23 @@ def gene_FSM(db, exp, outPrefix, genes):
 	gene_list=gene_file.readlines()
 	gene_list=[i.rstrip() for i in gene_list]
 	df_FSM = pd.read_sql("SELECT t.tx,c.read_count,c.exp,t.gene FROM counts c INNER JOIN txID t on t.isoform_id = c.isoform_id WHERE c.isoform_id IN (SELECT id from isoform WHERE category=='full-splice_match') AND c.exp IN (%s) GROUP BY t.gene,t.tx,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	gene_totals = pd.read_sql("SELECT c.read_count,c.exp,t.gene FROM counts c INNER JOIN txID t on t.isoform_id = c.isoform_id WHERE c.isoform_id IN (SELECT id from isoform WHERE category=='full-splice_match') AND c.exp IN (%s) GROUP BY t.gene,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	gene_totals.rename(columns={'read_count':'Total'}, inplace=True)
+	prop=df_FSM.merge(gene_totals, on=["exp", "gene"])
 	for g in gene_list:
-		df_gene=df_FSM[(df_FSM["gene"]==g)]
-		df_gene_pivot=df_gene.pivot(index="exp", columns="tx", values="read_count")
-		df_gene_pivot=df_gene_pivot.fillna(0)
-		tx_list=df_gene_pivot.columns
-		df_gene_pivot['Total'] = df_gene_pivot[tx_list].sum(axis=1)
-		pivot_plot=pd.DataFrame()
-		for i in tx_list:
-			pivot_plot['{}'.format(i)] = df_gene_pivot[i]/df_gene_pivot['Total']	
-		ax=pivot_plot.plot.bar(stacked=True).legend(bbox_to_anchor=(1,1), fontsize=8)
-		plt.suptitle("Transcript Read Proportion for " + g)
-		plt.subplots_adjust(right=0.6)
+		df_gene=prop[(prop["gene"]==g)]
+		df_gene['Proportion']=df_gene['read_count']/df_gene['Total']
+		fig = go.Figure()
+		fig.update_layout(
+			template="simple_white",
+			xaxis=dict(title_text="Exp"),
+			yaxis=dict(title_text="Proportion"),
+			barmode="stack",
+		)
+		fig.add_trace(go.Bar(x=df_gene.exp, y=df_gene.Proportion))
+		fig.update_layout(xaxis_type='category')
 		fileName=outPrefix+"_FSM_"+g+".pdf"
-		plt.savefig(fileName)
+		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
 	return
 

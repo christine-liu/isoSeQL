@@ -4,12 +4,8 @@ import sqlite3
 import csv
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import datetime
 import argparse
-import seaborn as sns
 import plotly.graph_objects as go
 import plotly.io as pio
 fig = go.Figure()
@@ -21,7 +17,7 @@ def isoprop_plot(db, exp, outPrefix):
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
-	colorDict={"full-splice_match":'#1d2f5f', 'incomplete-splice_match':'#8390FA', 'novel_in_catalog':'#6eaf46', 'novel_not_in_catalog':'#FAC748', 'antisense':'#00bcc0', 'intergenic':'#fa8800', 'genic':'ac0000', 'genic_intron':'#0096ff', 'fusion':'cf33ac'}
+	colorDict={"full-splice_match":'#1d2f5f', 'incomplete-splice_match':'#8390FA', 'novel_in_catalog':'#6eaf46', 'novel_not_in_catalog':'#FAC748', 'antisense':'#00bcc0', 'intergenic':'#fa8800', 'genic':'#ac0000', 'genic_intron':'#0096ff', 'fusion':'#cf33ac'}
 	#by read
 	df_prop=pd.read_sql("SELECT i.category,SUM(c.read_count),s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY i.category,s.exp,s.celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
 	calc_totals=pd.read_sql("SELECT s.exp, SUM(c.read_count) FROM scCounts c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY s.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
@@ -37,33 +33,33 @@ def isoprop_plot(db, exp, outPrefix):
 	prop['celltypeProportion']=prop['SUM(c.read_count)']/prop['cellTotal']
 	fig = go.Figure()
 	fig.update_layout(
-	    template="simple_white",
-	    xaxis=dict(title_text="Exp"),
-	    yaxis=dict(title_text="Proportion"),
-	    barmode="stack",
+		template="simple_white",
+		xaxis=dict(title_text="Exp"),
+		yaxis=dict(title_text="Proportion"),
+		barmode="stack",
 	)
 	category2plot=prop.category.unique().tolist()
 	colors=[colorDict[i] for i in category2plot]
 	for r, c in zip(category2plot, colors):
-	    plot_df = prop[prop.category == r]
-	    fig.add_trace(
-	        go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.Proportion, name=r, marker_color=c),
-	    )
+		plot_df = prop[prop.category == r]
+		fig.add_trace(
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.Proportion, name=r, marker_color=c),
+		)
 	readPlotFile = outPrefix+"_isoCelltypeReadPropPlot.pdf"
 	fig.write_image(readPlotFile)
 	print("Isoform read proportions plot saved: " + readPlotFile)
 	fig = go.Figure()
 	fig.update_layout(
-	    template="simple_white",
-	    xaxis=dict(title_text="Exp"),
-	    yaxis=dict(title_text="Proportion"),
-	    barmode="stack",
+		template="simple_white",
+		xaxis=dict(title_text="Exp"),
+		yaxis=dict(title_text="Proportion"),
+		barmode="stack",
 	)
 	for r, c in zip(category2plot, colors):
-	    plot_df = prop[prop.category == r]
-	    fig.add_trace(
-	        go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.celltypeProportion, name=r, marker_color=c),
-	    )
+		plot_df = prop[prop.category == r]
+		fig.add_trace(
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.celltypeProportion, name=r, marker_color=c),
+		)
 	readPlotFile=outPrefix+"_isoCelltypeNormReadPropPlot.pdf"
 	fig.write_image(readPlotFile)
 	print("Isoform read proportions plot saved: " + readPlotFile)
@@ -71,7 +67,7 @@ def isoprop_plot(db, exp, outPrefix):
 
 #by isoform w/o considering variable ends
 	df_prop=pd.read_sql("SELECT category,COUNT(category), exp, celltype FROM (SELECT DISTINCT i.category, s.exp, s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY category,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	
+
 
 
 
