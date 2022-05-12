@@ -124,7 +124,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 		)
 		for x in df_gene.tx.unique():
 			plot_df=df_gene[df_gene.tx==x]
-			fig.add_trace(go.Bar(x=df_gene.exp, y=df_gene.Proportion, name=str(df_gene.tx)))
+			fig.add_trace(go.Bar(x=df_gene.exp, y=df_gene.Proportion, name=x))
 		fig.update_layout(xaxis_type='category')
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
