@@ -193,11 +193,11 @@ def main():
 	countMat_parser.add_argument('--variable', action='store_true')
 	
 	args=parser.parse_args()
-	if args.subparser_name == "isoProp":
+	if args.subparser_name == "SCisoProp":
 		isoprop_plot(args.db, args.exp, args.outPrefix)
-	elif args.subparser_name == "FSM":
+	elif args.subparser_name == "SCFSM":
 		gene_FSM(args.db, args.exp, args.outPrefix, args.genes)
-	elif args.subparser_name=="countMatrix":
+	elif args.subparser_name=="SCcountMatrix":
 		countMatrix(args.db, args.exp, args.outPrefix, args.gene, args.variable)
 	else:
 		print("\n***ERROR***\n"+args.subparser_name+" is not an option.\n**********\n")
