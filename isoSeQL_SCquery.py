@@ -40,7 +40,7 @@ def isoprop_plot(db, exp, outPrefix):
 	for r, c in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
-			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.Proportion, name=r, marker_color=c),
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.exp_Proportion, name=r, marker_color=c),
 		)
 	readPlotFile = outPrefix+"_isoCelltypeReadPropPlot.pdf"
 	fig.write_image(readPlotFile)
@@ -55,7 +55,7 @@ def isoprop_plot(db, exp, outPrefix):
 	for r, c in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
-			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.celltypeProportion, name=r, marker_color=c),
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.cell_Proportion, name=r, marker_color=c),
 		)
 	readPlotFile=outPrefix+"_isoCelltypeNormReadPropPlot.pdf"
 	fig.write_image(readPlotFile)
