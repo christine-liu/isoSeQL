@@ -90,6 +90,13 @@ def isoprop_plot(db, exp, outPrefix):
 	isoPlotFile=outPrefix+"_isoCelltypePropPlot.pdf"
 	fig.write_image(isoPlotFile)
 	print("Isoform proportions per celltype normalized by exp plot saved: " + readPlotFile)
+	fig = go.Figure()
+	fig.update_layout(
+		template="simple_white",
+		xaxis=dict(title_text="Exp"),
+		yaxis=dict(title_text="Proportion"),
+		barmode="stack",
+	)
 	for r, c in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
