@@ -24,12 +24,9 @@ def isoprop_plot(db, exp, outPrefix):
 	calc_totals.rename(columns={'SUM(c.read_count)':'Total'}, inplace=True)
 	prop = df_prop.merge(calc_totals, on=["exp"])
 	prop['Proportion']=prop['SUM(c.read_count)']/prop['Total']
-	prop['exp_celltype']=prop['exp'].map(str)+'_'+prop['celltype']
 	cell_totals=pd.read_sql("SELECT SUM(c.read_count),s.exp, s.celltype FROM scCounts c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY s.exp, s.celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	cell_totals['exp_celltype']=cell_totals['exp'].map(str)+'_'+cell_totals['celltype']
 	cell_totals.rename(columns={'SUM(c.read_count)':'cellTotal'}, inplace=True)
-	cell_totals=cell_totals[["cellTotal","exp_celltype"]]
-	prop=prop.merge(cell_totals,on="exp_celltype")
+	prop=prop.merge(cell_totals,on=["exp","celltype"])
 	prop['celltypeProportion']=prop['SUM(c.read_count)']/prop['cellTotal']
 	fig = go.Figure()
 	fig.update_layout(
@@ -47,7 +44,7 @@ def isoprop_plot(db, exp, outPrefix):
 		)
 	readPlotFile = outPrefix+"_isoCelltypeReadPropPlot.pdf"
 	fig.write_image(readPlotFile)
-	print("Isoform read proportions plot saved: " + readPlotFile)
+	print("Isoform read proportions per celltype normalized by exp plot saved: " + readPlotFile)
 	fig = go.Figure()
 	fig.update_layout(
 		template="simple_white",
@@ -62,53 +59,50 @@ def isoprop_plot(db, exp, outPrefix):
 		)
 	readPlotFile=outPrefix+"_isoCelltypeNormReadPropPlot.pdf"
 	fig.write_image(readPlotFile)
-	print("Isoform read proportions plot saved: " + readPlotFile)
-	df_bed['name'] = df_bed['id'].map(str)+'_'+df_bed['start'].map(str)+'_'+df_bed['end'].map(str)
-
+	print("Isoform read proportions per celltype normalized by celltype plot saved: " + readPlotFile)
+	tableFile=outPrefix+"_isoCelltypeReadsPropTable.txt"
+	prop.to_csv(tableFile, sep='\t', index=False, header=True)
+	print("Isoform read proportions by celltype table saved: " + tableFile)
 #by isoform w/o considering variable ends
-	df_prop=pd.read_sql("SELECT category,COUNT(category), exp, celltype FROM (SELECT DISTINCT i.category, s.exp, s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY category,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-
-
-
-
-
-################
-
-	df_prop=pd.read_sql("SELECT i.category,COUNT(i.category),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY i.category,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	pivot=df_prop.pivot(index="exp", columns="category", values="COUNT(i.category)")
-	cats = pivot.columns.tolist()
-	# cats = ['full-splice_match', 'incomplete-splice_match', 'novel_in_catalog', 'novel_not_in_catalog', 'antisense', 'genic', 'intergenic', 'fusion', 'genic_intron']
-	pivot['Total'] = pivot[cats].sum(axis=1)
-	pivot_plot=pd.DataFrame()
-	for i in cats:
-		pivot_plot['{}'.format(i)] = pivot[i]/pivot['Total']
-	tableFile=outPrefix+"_isoPropTable.txt"
-	pivot_plot.to_csv(tableFile, sep='\t', index=True, header=True)
-	print("Isoform proportions table saved: " + tableFile)
-	plotFile=outPrefix+"_isoPropPlot.pdf"
-	ax=pivot_plot.plot.bar(stacked=True, color={'full-splice_match':'#006e00', 'incomplete-splice_match':'#008cf9', 'novel_in_catalog':'#b80058', 'novel_not_in_catalog':'#ebac23', 'antisense':'#00bbad', 'genic':'#d163e6', 'intergenic':'#b24502', 'fusion':'#ff9287', 'genic_intron':'#5954d6'}).legend(bbox_to_anchor=(1,1), fontsize=8)
-	plt.subplots_adjust(right=0.6)
-	plt.savefig(plotFile)
-	print("Isoform proportions plot saved: " + plotFile)
-	df_exp_read = pd.read_sql("SELECT i.category,SUM(c.read_count),c.exp FROM counts c INNER JOIN isoform i on i.id = c.isoform_id WHERE c.exp IN (%s) GROUP BY i.category,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	pivot_read = df_exp_read.pivot(index="exp", columns="category", values="SUM(c.read_count)")
-	cats_reads = pivot_read.columns.tolist()
-	pivot_read['Total'] = pivot_read[cats_reads].sum(axis=1)
-	pivot_filterReads=pd.DataFrame()
-	for i in cats:
-		pivot_filterReads['{}'.format(i)] = pivot_read[i]/pivot_read['Total']
-	readTableFile=outPrefix+"_isoReadsPropTable.txt"
-	pivot_filterReads.to_csv(readTableFile, sep='\t', index=True, header=True)
-	print("Isoform read proportions table saved: " + readTableFile)
-	readPlotFile = outPrefix+"_isoReadPropPlot.pdf"
-	ax=pivot_filterReads.plot.bar(stacked=True, color={'full-splice_match':'#006e00', 'incomplete-splice_match':'#008cf9', 'novel_in_catalog':'#b80058', 'novel_not_in_catalog':'#ebac23', 'antisense':'#00bbad', 'genic':'#d163e6', 'intergenic':'#b24502', 'fusion':'#ff9287', 'genic_intron':'#5954d6'}).legend(bbox_to_anchor=(1,1), fontsize=8)
-	plt.subplots_adjust(right=0.6)
-	plt.savefig(readPlotFile)
-	print("Isoform read proportions plot saved: " + readPlotFile)
+	df_prop=pd.read_sql("SELECT category,COUNT(category), exp, celltype FROM (SELECT DISTINCT i.id,i.category, s.exp, s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY category,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	exp_totals=pd.read_sql("SELECT COUNT(isoform_id), exp FROM counts WHERE exp IN (%s) GROUP BY exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	exp_totals.rename(columns={'COUNT(isoform_id)':'exp_Total'}, inplace=True)
+	cell_totals=pd.read_sql("SELECT COUNT(isoform_id),exp,celltype FROM (SELECT DISTINCT c.isoform_id, s.exp, s.celltype FROM scCounts c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY exp, celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	cell_totals.rename(columns={'COUNT(isoform_id)':'cell_Total'}, inplace=True)
+	prop=df_prop.merge(exp_totals, on=['exp'])
+	prop=prop.merge(cell_totals, on=['exp', 'celltype'])
+	prop['exp_Proportion']=prop['COUNT(category)']/prop['exp_Total']
+	prop['cell_Proportion']=prop['COUNT(category)']/prop['cell_Total']
+	fig = go.Figure()
+	fig.update_layout(
+		template="simple_white",
+		xaxis=dict(title_text="Exp"),
+		yaxis=dict(title_text="Proportion"),
+		barmode="stack",
+	)
+	category2plot=prop.category.unique().tolist()
+	colors=[colorDict[i] for i in category2plot]
+	for r, c in zip(category2plot, colors):
+		plot_df = prop[prop.category == r]
+		fig.add_trace(
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.exp_Proportion, name=r, marker_color=c),
+		)		
+	isoPlotFile=outPrefix+"_isoCelltypePropPlot.pdf"
+	fig.write_image(isoPlotFile)
+	print("Isoform proportions per celltype normalized by exp plot saved: " + readPlotFile)
+	for r, c in zip(category2plot, colors):
+		plot_df = prop[prop.category == r]
+		fig.add_trace(
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.exp_Proportion, name=r, marker_color=c),
+		)
+	isoPlotFile=outPrefix+"_isoCelltypeNormPropPlot.pdf"
+	fig.write_image(isoPlotFile)
+	print("Isoform proportions per celltype normalized by celltype plot saved: " + readPlotFile)
+	tableFile=outPrefix+"_isoCelltypePropTable.txt"
+	prop.to_csv(tableFile, sep='\t', index=False, header=True)
+	print("Isoform proportions by celltype table saved: " + tableFile)
 	return
 
-
-###
 def gene_FSM(db, exp, outPrefix, genes):
 	conn=sqlite3.connect(db)
 	c=conn.cursor()
@@ -135,7 +129,6 @@ def gene_FSM(db, exp, outPrefix, genes):
 		plt.savefig(fileName)
 		print("FSM read proportions plot saved: " + fileName)
 	return
-
 
 
 
@@ -183,16 +176,16 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 def main():
 	parser=argparse.ArgumentParser(description="built-in queries to generate plots/tables/visualization of exp/genes of interest")
 	subparsers = parser.add_subparsers(dest="subparser_name")
-	isoProp_parser = subparsers.add_parser('isoProp')
+	isoProp_parser = subparsers.add_parser('SCisoProp')
 	isoProp_parser.add_argument('--db')
 	isoProp_parser.add_argument('--exp')
 	isoProp_parser.add_argument('--outPrefix')
-	FSM_parser = subparsers.add_parser('FSM')
+	FSM_parser = subparsers.add_parser('SCFSM')
 	FSM_parser.add_argument('--db')
 	FSM_parser.add_argument('--exp')
 	FSM_parser.add_argument('--outPrefix')
 	FSM_parser.add_argument('--genes')
-	countMat_parser = subparsers.add_parser('countMatrix')
+	countMat_parser = subparsers.add_parser('SCcountMatrix')
 	countMat_parser.add_argument('--db')
 	countMat_parser.add_argument('--exp')
 	countMat_parser.add_argument('--outPrefix')
