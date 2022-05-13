@@ -100,7 +100,7 @@ def isoprop_plot(db, exp, outPrefix):
 	for r, c in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
-			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.exp_Proportion, name=r, marker_color=c),
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.cell_Proportion, name=r, marker_color=c),
 		)
 	isoPlotFile=outPrefix+"_isoCelltypeNormPropPlot.pdf"
 	fig.write_image(isoPlotFile)
