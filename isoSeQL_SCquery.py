@@ -21,13 +21,13 @@ def isoprop_plot(db, exp, outPrefix):
 	#by read
 	df_prop=pd.read_sql("SELECT i.category,SUM(c.read_count),s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY i.category,s.exp,s.celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
 	calc_totals=pd.read_sql("SELECT s.exp, SUM(c.read_count) FROM scCounts c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY s.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	calc_totals.rename(columns={'SUM(c.read_count)':'Total'}, inplace=True)
-	prop = df_prop.merge(calc_totals, on=["exp"])
-	prop['Proportion']=prop['SUM(c.read_count)']/prop['Total']
+	calc_totals.rename(columns={'SUM(c.read_count)':'exp_Total'}, inplace=True)
 	cell_totals=pd.read_sql("SELECT SUM(c.read_count),s.exp, s.celltype FROM scCounts c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY s.exp, s.celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	cell_totals.rename(columns={'SUM(c.read_count)':'cellTotal'}, inplace=True)
+	cell_totals.rename(columns={'SUM(c.read_count)':'cell_Total'}, inplace=True)
+	prop = df_prop.merge(calc_totals, on=["exp"])
+	prop['exp_Proportion']=prop['SUM(c.read_count)']/prop['exp_Total']
 	prop=prop.merge(cell_totals,on=["exp","celltype"])
-	prop['celltypeProportion']=prop['SUM(c.read_count)']/prop['cellTotal']
+	prop['cell_Proportion']=prop['SUM(c.read_count)']/prop['cell_Total']
 	fig = go.Figure()
 	fig.update_layout(
 		template="simple_white",
