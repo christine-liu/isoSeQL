@@ -10,6 +10,8 @@ import plotly.graph_objects as go
 import plotly.io as pio
 fig = go.Figure()
 pio.full_figure_for_development(fig,warn=False)
+import timeit
+
 
 def isoprop_plot(db, exp, outPrefix):
 	conn=sqlite3.connect(db)
@@ -201,11 +203,20 @@ def main():
 	
 	args=parser.parse_args()
 	if args.subparser_name == "SCisoProp":
+		start=timeit.default_timer()
 		isoprop_plot(args.db, args.exp, args.outPrefix)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name == "SCFSM":
+		start=timeit.default_timer()
 		gene_FSM(args.db, args.exp, args.outPrefix, args.genes)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name=="SCcountMatrix":
+		start=timeit.default_timer()
 		countMatrix(args.db, args.exp, args.outPrefix, args.gene, args.variable)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	else:
 		print("\n***ERROR***\n"+args.subparser_name+" is not an option.\n**********\n")
 
