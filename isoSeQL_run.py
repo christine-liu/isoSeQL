@@ -22,6 +22,9 @@ def main():
 	genePredInfo=fileParse.parse_genePred(args.genePred)
 	if args.sc:
 		scInfo,UMIs=fileParse.parse_singleCell(args.sc)
+	else:
+		scInfo=None
+		UMIs=None
 
 	if not os.path.isfile(args.db):
 		sqlDB.make_db(args.db)
