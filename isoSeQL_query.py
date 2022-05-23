@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 fig = go.Figure()
 pio.full_figure_for_development(fig,warn=False)
+import sys
 import timeit
 
 def isoprop_plot(db, exp, outPrefix):

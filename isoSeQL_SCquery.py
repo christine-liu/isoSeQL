@@ -121,7 +121,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 	gene_file=open(genes, "r")
 	gene_list=gene_file.readlines()
 	gene_list=[i.rstrip() for i in gene_list]
-	df_FSM = pd.read_sql("SELECT t.tx,c.read_count,c.exp,t.gene FROM counts c INNER JOIN txID t on t.isoform_id = c.isoform_id WHERE c.isoform_id IN (SELECT id from isoform WHERE category=='full-splice_match') AND c.exp IN (%s) GROUP BY t.gene,t.tx,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	df_FSM = pd.read_sql("SELECT tx,gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY tx,gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
 	for g in gene_list:
 		df_gene=df_FSM[(df_FSM["gene"]==g)]
 		df_gene_pivot=df_gene.pivot(index="exp", columns="tx", values="read_count")
