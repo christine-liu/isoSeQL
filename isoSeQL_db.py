@@ -103,7 +103,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 					#need to check then for each isoform and where to add the counts, all isoforms should be in the database b/c parse classif first
 
 					#is it any faster to parse through all isoforms and then each cell associated with each isoform vs each cell and then each isoform for every cell?
-		for isoform_ends in observedIsoEnds:
+		for isoform_ends in observedIsoEnd:
 			c.execute('SELECT SUM(read_count) FROM scCounts_ends WHERE scID IN (SELECT id FROM scInfo WHERE exp=?) AND ends_id = ?', (expID, isoform_ends))
 			sum_counts=int(c.fetchall()[0][0])
 			c.execute('INSERT INTO ends_counts(ends_id, exp, read_count) VALUES (?,?,?)', (isoform_ends, expID, sum_counts))
