@@ -83,7 +83,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 			isoEndID = c.fetchall()
 			if len(isoEndID) == 0:
 				isoEndID=str(isoID)+"_"+str(genePred[iso].start)+"_"+str(genePred[iso].end)
-				c.execute('INSERT INTO isoform_ends(id, isoform_id, chr, start, end, ex_sizes, ex_starts) VALUES (?,?,?,?,?,?,?)', (newisoEndID, isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #if not add into table and return id
+				c.execute('INSERT INTO isoform_ends(id, isoform_id, chr, start, end, ex_sizes, ex_starts) VALUES (?,?,?,?,?,?,?)', (isoEndID, isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #if not add into table and return id
 			else:
 				isoEndID=isoEndID[0][0] #if so, return id
 			observedIsoEnd.add(isoEndID)
@@ -133,7 +133,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 			isoEndID = c.fetchall()
 			if len(isoEndID) == 0:
 				isoEndID=str(isoID)+"_"+str(genePred[iso].start)+"_"+str(genePred[iso].end)
-				c.execute('INSERT INTO isoform_ends(isoform_id, chr, start, end, ex_sizes, ex_starts) VALUES (?,?,?,?,?,?)', (isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #if not add into table and return id
+				c.execute('INSERT INTO isoform_ends(id, isoform_id, chr, start, end, ex_sizes, ex_starts) VALUES (?,?,?,?,?,?,?)', (isoEndID,isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #if not add into table and return id
 			else:
 				isoEndID=isoEndID[0][0] #if so, return id
 			c.execute('INSERT INTO ends_counts(ends_id, exp, read_count) VALUES (?,?,?)', (isoEndID, expID, classif[iso].count)) #should be no repeats of exact isoforms in an exp, so can just directly add counts to table
