@@ -82,7 +82,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 			c.execute('SELECT id FROM isoform_ends WHERE isoform_id = ? AND chr = ? AND start = ? AND end = ? AND ex_sizes = ? AND ex_starts = ?', (isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #check if exact isoform already in table
 			isoEndID = c.fetchall()
 			if len(isoEndID) == 0:
-				isoEndID=str(isoID)+"_"+genePred[iso].start+"_"+genePred[iso].end
+				isoEndID=str(isoID)+"_"+str(genePred[iso].start)+"_"+str(genePred[iso].end)
 				c.execute('INSERT INTO isoform_ends(id, isoform_id, chr, start, end, ex_sizes, ex_starts) VALUES (?,?,?,?,?,?,?)', (newisoEndID, isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #if not add into table and return id
 			else:
 				isoEndID=isoEndID[0][0] #if so, return id
@@ -132,7 +132,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 			c.execute('SELECT id FROM isoform_ends WHERE isoform_id = ? AND chr = ? AND start = ? AND end = ? AND ex_sizes = ? AND ex_starts = ?', (isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #check if exact isoform already in table
 			isoEndID = c.fetchall()
 			if len(isoEndID) == 0:
-				isoEndID=str(isoID)+"_"+genePred[iso].start+"_"+genePred[iso].end
+				isoEndID=str(isoID)+"_"+str(genePred[iso].start)+"_"+str(genePred[iso].end)
 				c.execute('INSERT INTO isoform_ends(isoform_id, chr, start, end, ex_sizes, ex_starts) VALUES (?,?,?,?,?,?)', (isoID, genePred[iso].chrom, genePred[iso].start, genePred[iso].end, genePred[iso].exSizes, genePred[iso].exBedStarts)) #if not add into table and return id
 			else:
 				isoEndID=isoEndID[0][0] #if so, return id
