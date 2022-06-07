@@ -90,17 +90,17 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 			c.execute('INSERT INTO PBID(PBID, exp, ends_id) VALUES (?,?,?)', (iso, expID, isoEndID)) #add in PBID info to match back to original SQANTI3 output files
 			if classif[iso].cat == "full-splice_match" or classif[iso].cat=="incomplete-splice_match":
 				c.execute('INSERT OR IGNORE INTO txID(isoform_id, exp, tx, gene) VALUES (?,?,?,?)', (isoID, expID, classif[iso].transcript, classif[iso].gene)) #keep track of txIDs
-		if iso in UMIs.keys():
-			for barcode in UMIs[iso].keys():
-				c.execute('SELECT id FROM scInfo WHERE exp = ? AND barcode = ?', (expID, barcode))
-				scID = c.fetchall()
-				if len(scID) == 0:
-					print("ERROR: missing single cell info")
-					exit
-				else:
-					scID = scID[0][0]
-					c.execute('INSERT INTO scCounts_ends(ends_id, scID, read_count) VALUES (?,?,?)', (isoEndID, scID, len(UMIs[iso][barcode],)))
-					#need to check then for each isoform and where to add the counts, all isoforms should be in the database b/c parse classif first
+			if iso in UMIs.keys():
+				for barcode in UMIs[iso].keys():
+					c.execute('SELECT id FROM scInfo WHERE exp = ? AND barcode = ?', (expID, barcode))
+					scID = c.fetchall()
+					if len(scID) == 0:
+						print("ERROR: missing single cell info")
+						exit
+					else:
+						scID = scID[0][0]
+						c.execute('INSERT INTO scCounts_ends(ends_id, scID, read_count) VALUES (?,?,?)', (isoEndID, scID, len(UMIs[iso][barcode],)))
+						#need to check then for each isoform and where to add the counts, all isoforms should be in the database b/c parse classif first
 
 					#is it any faster to parse through all isoforms and then each cell associated with each isoform vs each cell and then each isoform for every cell?
 		for isoform_ends in observedIsoEnd:
