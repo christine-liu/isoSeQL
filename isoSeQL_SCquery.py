@@ -8,7 +8,6 @@ import datetime
 import argparse
 import plotly.graph_objects as go
 import plotly.io as pio
-fig = go.Figure()
 pio.full_figure_for_development(fig,warn=False)
 import timeit
 
@@ -31,6 +30,7 @@ def isoprop_plot(db, exp, outPrefix):
 	prop=prop.merge(cell_totals,on=["exp","celltype"])
 	prop['cell_Proportion']=prop['SUM(c.read_count)']/prop['cell_Total']
 	fig = go.Figure()
+	pio.full_figure_for_development(fig,warn=False)
 	fig.update_layout(
 		template="simple_white",
 		xaxis=dict(title_text="Exp"),
@@ -39,25 +39,26 @@ def isoprop_plot(db, exp, outPrefix):
 	)
 	category2plot=prop.category.unique().tolist()
 	colors=[colorDict[i] for i in category2plot]
-	for r, c in zip(category2plot, colors):
+	for r, col in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
-			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.exp_Proportion, name=r, marker_color=c),
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.exp_Proportion, name=r, marker_color=col),
 		)
 	readPlotFile = outPrefix+"_isoCelltypeReadPropPlot.pdf"
 	fig.write_image(readPlotFile)
 	print("Isoform read proportions per celltype normalized by exp plot saved: " + readPlotFile)
 	fig = go.Figure()
+	pio.full_figure_for_development(fig,warn=False)
 	fig.update_layout(
 		template="simple_white",
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion"),
 		barmode="stack",
 	)
-	for r, c in zip(category2plot, colors):
+	for r, col in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
-			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.cell_Proportion, name=r, marker_color=c),
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.cell_Proportion, name=r, marker_color=col),
 		)
 	readPlotFile=outPrefix+"_isoCelltypeNormReadPropPlot.pdf"
 	fig.write_image(readPlotFile)
@@ -76,6 +77,7 @@ def isoprop_plot(db, exp, outPrefix):
 	prop['exp_Proportion']=prop['COUNT(category)']/prop['exp_Total']
 	prop['cell_Proportion']=prop['COUNT(category)']/prop['cell_Total']
 	fig = go.Figure()
+	pio.full_figure_for_development(fig,warn=False)
 	fig.update_layout(
 		template="simple_white",
 		xaxis=dict(title_text="Exp"),
@@ -84,25 +86,26 @@ def isoprop_plot(db, exp, outPrefix):
 	)
 	category2plot=prop.category.unique().tolist()
 	colors=[colorDict[i] for i in category2plot]
-	for r, c in zip(category2plot, colors):
+	for r, col in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
-			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.exp_Proportion, name=r, marker_color=c),
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.exp_Proportion, name=r, marker_color=col),
 		)		
 	isoPlotFile=outPrefix+"_isoCelltypePropPlot.pdf"
 	fig.write_image(isoPlotFile)
 	print("Isoform proportions per celltype normalized by exp plot saved: " + readPlotFile)
 	fig = go.Figure()
+	pio.full_figure_for_development(fig,warn=False)
 	fig.update_layout(
 		template="simple_white",
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion"),
 		barmode="stack",
 	)
-	for r, c in zip(category2plot, colors):
+	for r, col in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
-			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.cell_Proportion, name=r, marker_color=c),
+			go.Bar(x=[plot_df.exp, plot_df.celltype], y=plot_df.cell_Proportion, name=r, marker_color=col),
 		)
 	isoPlotFile=outPrefix+"_isoCelltypeNormPropPlot.pdf"
 	fig.write_image(isoPlotFile)
@@ -122,20 +125,27 @@ def gene_FSM(db, exp, outPrefix, genes):
 	gene_list=gene_file.readlines()
 	gene_list=[i.rstrip() for i in gene_list]
 	df_FSM = pd.read_sql("SELECT tx,gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY tx,gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	FSM_total=pd.read_sql("SELECT gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	FSM_total.rename(columns={'SUM(read_count)':'Total'}, inplace=True)
+	prop=df_FSM.merge(FSM_total, on=['exp','gene','celltype'])
+	prop['Proportion']=prop['SUM(read_count)']/prop['Total']
 	for g in gene_list:
-		df_gene=df_FSM[(df_FSM["gene"]==g)]
-		df_gene_pivot=df_gene.pivot(index="exp", columns="tx", values="read_count")
-		df_gene_pivot=df_gene_pivot.fillna(0)
-		tx_list=df_gene_pivot.columns
-		df_gene_pivot['Total'] = df_gene_pivot[tx_list].sum(axis=1)
-		pivot_plot=pd.DataFrame()
-		for i in tx_list:
-			pivot_plot['{}'.format(i)] = df_gene_pivot[i]/df_gene_pivot['Total']	
-		ax=pivot_plot.plot.bar(stacked=True).legend(bbox_to_anchor=(1,1), fontsize=8)
-		plt.suptitle("Transcript Read Proportion for " + g)
-		plt.subplots_adjust(right=0.6)
+		df_gene=prop[(prop["gene"]==g)]
+		df_gene.celltype=pd.Categorical(df_gene.celltype, categories=['Ast', 'Ex', 'Inh', 'Mic', 'OPC', 'Oli', 'Per', 'End', 'NA'])
+		df_gene=df_gene.sort_values("celltype")
+		fig = go.Figure()
+		pio.full_figure_for_development(fig,warn=False)
+		fig.update_layout(
+			template="simple_white",
+			xaxis=dict(title_text="Exp")
+			yaxis=dict(title_text="Proportion"),
+			barmode="stack",
+		)
+		for x in df_gene.tx.unique():
+			plot_df=df_gene[df_gene.tx==x]
+			fig.add_trace(go.Bar(x=plot_df.exp, y=plot_df.Proportion,name=x))
 		fileName=outPrefix+"_FSM_"+g+".pdf"
-		plt.savefig(fileName)
+		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
 	return
 
