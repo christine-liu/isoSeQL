@@ -8,7 +8,6 @@ import datetime
 import argparse
 import plotly.graph_objects as go
 import plotly.io as pio
-pio.full_figure_for_development(fig,warn=False)
 import timeit
 
 
