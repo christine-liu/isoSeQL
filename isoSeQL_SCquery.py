@@ -137,7 +137,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 		pio.full_figure_for_development(fig,warn=False)
 		fig.update_layout(
 			template="simple_white",
-			xaxis=dict(title_text="Exp")
+			xaxis=dict(title_text="Exp"),
 			yaxis=dict(title_text="Proportion"),
 			barmode="stack",
 		)
