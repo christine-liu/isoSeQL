@@ -143,7 +143,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 		)
 		for x in df_gene.tx.unique():
 			plot_df=df_gene[df_gene.tx==x]
-			fig.add_trace(go.Bar(x=plot_df.exp, y=plot_df.Proportion,name=x))
+			fig.add_trace(go.Bar(x=[plot_df.exp, plot_df.celltype],y=plot_df.Proportion,name=x))
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
