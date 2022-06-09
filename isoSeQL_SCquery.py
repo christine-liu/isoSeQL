@@ -124,37 +124,15 @@ def gene_FSM(db, exp, outPrefix, genes):
 	gene_file=open(genes, "r")
 	gene_list=gene_file.readlines()
 	gene_list=[i.rstrip() for i in gene_list]
-	# df_FSM = pd.read_sql("SELECT tx,gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY tx,gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	# FSM_total=pd.read_sql("SELECT gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	# FSM_total.rename(columns={'SUM(read_count)':'Total'}, inplace=True)
-	# prop=df_FSM.merge(FSM_total, on=['exp','gene','celltype'])
-	# prop['Proportion']=prop['SUM(read_count)']/prop['Total']
-	# for g in gene_list:
-	# 	df_gene=prop[(prop["gene"]==g)]
-	# 	df_gene.celltype=pd.Categorical(df_gene.celltype, categories=['Ast', 'Ex', 'Inh', 'Mic', 'OPC', 'Oli', 'Per', 'End', 'NA'])
-	# 	df_gene=df_gene.sort_values("celltype")
-	# 	fig = go.Figure()
-	# 	pio.full_figure_for_development(fig,warn=False)
-	# 	fig.update_layout(
-	# 		template="simple_white",
-	# 		xaxis=dict(title_text="Exp"),
-	# 		yaxis=dict(title_text="Proportion"),
-	# 		barmode="stack",
-	# 	)
-	# 	for x in df_gene.tx.unique():
-	# 		plot_df=df_gene[df_gene.tx==x]
-	# 		fig.add_trace(go.Bar(x=[plot_df.exp, plot_df.celltype],y=plot_df.Proportion,name=x))
-	# 	fileName=outPrefix+"_FSM_"+g+".pdf"
-	# 	fig.write_image(fileName)
-	# 	print("FSM read proportions plot saved: " + fileName)
+	df_FSM = pd.read_sql("SELECT tx,gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY tx,gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	FSM_total=pd.read_sql("SELECT gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	FSM_total.rename(columns={'SUM(read_count)':'Total'}, inplace=True)
+	prop=df_FSM.merge(FSM_total, on=['exp','gene','celltype'])
+	prop['Proportion']=prop['SUM(read_count)']/prop['Total']
+	prop.celltype=pd.Categorical(prop.celltype, categories=['Ast', 'Ex', 'Inh', 'Mic', 'OPC', 'Oli', 'Per', 'End', 'NA'])
+	prop=prop.sort_values("celltype")
 	for g in gene_list:
-		df_FSM = pd.read_sql("SELECT tx,gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.gene = ? AND i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY tx,gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=(g, *exp_list))
-		FSM_total=pd.read_sql("SELECT gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.gene = ? AND i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=(g, *exp_list))
-		FSM_total.rename(columns={'SUM(read_count)':'Total'}, inplace=True)
-		prop=df_FSM.merge(FSM_total, on=['exp','gene','celltype'])
-		prop['Proportion']=prop['SUM(read_count)']/prop['Total']
-		prop.celltype=pd.Categorical(prop.celltype, categories=['Ast', 'Ex', 'Inh', 'Mic', 'OPC', 'Oli', 'Per', 'End', 'NA'])
-		prop=prop.sort_values("celltype")
+		df_gene=prop[(prop["gene"]==g)]
 		fig = go.Figure()
 		pio.full_figure_for_development(fig,warn=False)
 		fig.update_layout(
@@ -163,8 +141,8 @@ def gene_FSM(db, exp, outPrefix, genes):
 			yaxis=dict(title_text="Proportion"),
 			barmode="stack",
 		)
-		for x in prop.tx.unique():
-			plot_df=prop[prop.tx==x]
+		for x in df_gene.tx.unique():
+			plot_df=df_gene[df_gene.tx==x]
 			fig.add_trace(go.Bar(x=[plot_df.exp, plot_df.celltype],y=plot_df.Proportion,name=x))
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
