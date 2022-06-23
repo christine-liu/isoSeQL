@@ -138,7 +138,7 @@ def IEJ_table(db, exp, out):
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
-	df_IEJ=pd.read_sql("SELECT i.id, i.gene, c.exp, c.read_count FROM isoform i INNER JOIN counts c on c.isoform_id = i.id WHERE i.IEJ = 'TRUE' AND c.exp IN (%s) GROUP BY i.gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	df_IEJ=pd.read_sql("SELECT i.id, x.id, i.gene, c.exp, c.read_count FROM isoform i INNER JOIN counts c on c.isoform_id = i.id INNER JOIN isoform_ends x on x.isoform_id=i.id WHERE i.IEJ = 'TRUE' AND c.exp IN (%s) " % ','.join('?' for i in exp_list), conn, params=exp_list)
 	df_IEJ['IEJ_id'] = df_IEJ['gene'] + "_" + df_IEJ['id'].astype(str)
 	df_IEJ_pivot=df_IEJ.pivot(index="IEJ_id", columns="exp", values="read_count")
 	df_IEJ_pivot=df_IEJ_pivot.fillna(0)

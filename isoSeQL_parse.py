@@ -13,11 +13,11 @@ class Classif:
 		self.transcript = transcript
 		self.ref_exons = ref_exons #can be a string if novel so NA
 		self.tx_exons = int(tx_exons)
-		self.subcat = "variable_ends" if (subcat=="alternative_3end" or subcat=="alternative3end5end" or subcat=="alternative_5end" or subcat=="reference_match") else subcat
+		self.subcat = subcat
 		self.canonical = canonical
 		self.count = int(count) if (count != "NA") else "NA"
 		self.tx_length=int(tx_length)
-		self.IEJ = "TRUE" if (self.subcat == "CDS_CDS" or self.subcat == "CDS_UTR" or self.subcat == "UTR_UTR") else "FALSE"
+		self.IEJ = "TRUE" if ("CDS_CDS" in self.subcat or "CDS_UTR" in self.subcat or "UTR_UTR" in self.subcat) else "FALSE"
 	
 	def printObj(self):
 		return self.iso_id+'\t'+self.cat+'\t'+self.gene+'\t'+self.transcript+'\t'+str(self.ref_exons)+'\t'+str(self.tx_exons)+'\t'+self.subcat+'\t'+self.canonical+'\t'+str(self.count)+'\t'+self.IEJ+'\t'+str(self.tx_length)+'\n'
