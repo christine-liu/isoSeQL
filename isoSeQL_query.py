@@ -88,7 +88,7 @@ def make_bed(db, exp, outPrefix, name):
 	name_list=[i.rstrip() for i in name_list]
 	e=0
 	while e < len(exp_list):
-		df_bed = pd.read_sql("SELECT DISTINCT x.id,i.chr,x.start,x.end,i.strand,i.category,i.iso_exons,i.junctions, x.ex_sizes,x.ex_starts FROM isoform i INNER JOIN isoform_ends x on i.id=x.isoform_id WHERE x.id IN (SELECT ends_id FROM ends_counts WHERE exp = ?)", conn, params=(exp_list[e],))
+		df_bed = pd.read_sql("SELECT x.id,i.chr,x.start,x.end,i.strand,i.category,i.iso_exons,i.junctions, x.ex_sizes,x.ex_starts FROM isoform i INNER JOIN isoform_ends x on i.id=x.isoform_id WHERE x.id IN (SELECT ends_id FROM ends_counts WHERE exp = ?)", conn, params=(exp_list[e],))
 		df_bed['score'] = 60
 		df_bed['RGB'] = df_bed['category'].apply(lambda x: "29,47,95" if x == "full-splice_match" else '131,144,250' if x=="incomplete-splice_match" else '110,175,70' if x=="novel_in_catalog" else '250,199,72' if x=="novel_not_in_catalog" else '0,188,192' if x=="antisense" else '250,136,0' if x=="intergenic" else '172,0,0' if x=="genic" else '0,150,255' if x=='genic_intron' else '207,51,172' if x=="fusion" else '255,0,0')
 		df_bed = df_bed[['chr','start','end','id','score','strand','start','end','RGB','iso_exons','ex_sizes','ex_starts']]
