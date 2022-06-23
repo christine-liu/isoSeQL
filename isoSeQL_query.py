@@ -132,7 +132,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 		print("FSM read proportions plot saved: " + fileName)
 	return
 
-def IEJ_table(db, exp, outPrefix, variable):
+def IEJ_table(db, exp, outPrefix, variable=False):
 	conn=sqlite3.connect(db)
 	c=conn.cursor()
 	exp_file=open(exp, "r")
@@ -262,7 +262,8 @@ def main():
 	IEJtab_parser = subparsers.add_parser('IEJtab')
 	IEJtab_parser.add_argument('--db')
 	IEJtab_parser.add_argument('--exp')
-	IEJtab_parser.add_argument('--out')
+	IEJtab_parser.add_argument('--outPrefix')
+	IEJtab_parser.add_argument('--variable', action='store_true')
 	sample_parser = subparsers.add_parser('expInfo')
 	sample_parser.add_argument('--db')
 	sample_parser.add_argument('--out')
@@ -295,7 +296,7 @@ def main():
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name == "IEJtab":
 		start=timeit.default_timer()
-		IEJ_table(args.db, args.exp, args.out)
+		IEJ_table(args.db, args.exp, args.outPrefix, args.variable)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name=="expInfo":
