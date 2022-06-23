@@ -196,37 +196,42 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 			print("Variable ends counts matrix saved: " + filename)
 			return
 
-def tappASgff(db, exp, out):
+def tappASgff(db, exp, out, variable=False):
 	conn=sqlite3.connect(db)
 	c=conn.cursor()
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
-	gff3TX=pd.read_sql("SELECT DISTINCT i.id, i.chr, i.strand, i.gene, i.junctions, i.category, x.start, x.end, x.ex_sizes, t.tx FROM isoform i LEFT OUTER JOIN txID t on i.id=t.isoform_id INNER JOIN isoform_ends x on i.id=x.isoform_id WHERE x.isoform_id IN (SELECT e.ends_id FROM ends_counts e WHERE e.exp IN (%s)) " % ','.join('?' for i in exp_list), conn, params=exp_list)
-	gff3TX['isoform'] = gff3TX['id'].map(str)+'_'+gff3TX['start'].map(str)+'_'+gff3TX['end'].map(str)
-	gff3TX['tx'].replace(np.nan, "novel", inplace=True)
-	outFile = open(out, "w+")
-	for i, row in gff3TX.iterrows():
-		length=sum(int(x) for x in row['ex_sizes'].split(","))
-		txLine=row['isoform']+"\ttappAS\ttranscript\t1\t"+str(length)+"\t.\t"+row['strand']+"\t.\tID="+row['tx']+"; primary_class="+row['category']+'; PosType=T\n'
-		a=outFile.write(txLine)
-		geneLine=row['isoform']+"\ttappAS\tgene\t1\t"+str(length)+"\t.\t"+row['strand']+"\t.\tID="+row['gene']+"; Name="+row['gene']+"; Desc="+row['gene']+"; PosType=T\n"
-		a=outFile.write(geneLine)
-		cdsLine=row['isoform']+"\ttappAS\tCDS\t.\t.\t.\t"+row['strand']+"\t.\tID=Protein_"+row['isoform']+"; Name=Protein_"+row['isoform']+'; Desc=Protein_'+row['isoform']+'; PosType=T\n'
-		a=outFile.write(cdsLine)
-		genomicLine=row['isoform']+"\ttappAS\tgenomic\t1\t1\t.\t"+row['strand']+"\t.\tChr="+row['chr']+'; PosType=G\n'
-		a=outFile.write(genomicLine)
-		jxn_len=len(row['junctions'])
-		if jxn_len > 2:
-			jxns=row['junctions'][2:-2].split('), (')
-			j=0
-			while j < len(jxns):
-				startJ=jxns[j].split(", ")[0]
-				endJ=jxns[j].split(", ")[1]
-				sjLine=row['isoform']+"\ttappAS\tsplice_junction\t"+str(startJ)+"\t"+str(endJ)+"\t.\t"+row['strand']+"\t.\tID_junction_"+str(i)+"; Chr="+row['chr']+"; PosType=G\n"
-				a=outFile.write(sjLine)
-				j+=1
-	print("tappAS-compatible gff3 generated: " + out)
+	if variable:
+		endsInfo=pd.read_sql("SELECT id, isoform_id,start, end, ex_sizes FROM isoform_ends WHERE id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
+		isoInfo= pd.read_sql("SELECT i.id, i.chr, i.strand, i.gene, i.junctions, t.tx FROM isoform i INNER JOIN txID t on i.id=t.isoform_id WHERE i.id IN (SELECT isoform_id FROM counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
+		isoInfo.rename(columns={'id':'isoform_id'}, inplace=True)
+		gff3TX=isoInfo.merge(endsInfo, on=['isoform_id'])
+		gff3TX['tx'].replace(np.nan, "novel", inplace=True)
+		outFile = open(out, "w+")
+		for i, row in gff3TX.iterrows():
+			length=sum(int(x) for x in row['ex_sizes'].split(","))
+			txLine=row['id']+"\ttappAS\ttranscript\t1\t"+str(length)+"\t.\t"+row['strand']+"\t.\tID="+row['tx']+"; primary_class="+row['category']+'; PosType=T\n'
+			a=outFile.write(txLine)
+			geneLine=row['id']+"\ttappAS\tgene\t1\t"+str(length)+"\t.\t"+row['strand']+"\t.\tID="+row['gene']+"; Name="+row['gene']+"; Desc="+row['gene']+"; PosType=T\n"
+			a=outFile.write(geneLine)
+			cdsLine=row['id']+"\ttappAS\tCDS\t.\t.\t.\t"+row['strand']+"\t.\tID=Protein_"+row['id']+"; Name=Protein_"+row['id']+'; Desc=Protein_'+row['id']+'; PosType=T\n'
+			a=outFile.write(cdsLine)
+			genomicLine=row['id']+"\ttappAS\tgenomic\t1\t1\t.\t"+row['strand']+"\t.\tChr="+row['chr']+'; PosType=G\n'
+			a=outFile.write(genomicLine)
+			jxn_len=len(row['junctions'])
+			if jxn_len > 2:
+				jxns=row['junctions'][2:-2].split('), (')
+				j=0
+				while j < len(jxns):
+					startJ=jxns[j].split(", ")[0]
+					endJ=jxns[j].split(", ")[1]
+					sjLine=row['id']+"\ttappAS\tsplice_junction\t"+str(startJ)+"\t"+str(endJ)+"\t.\t"+row['strand']+"\t.\tID_junction_"+str(i)+"; Chr="+row['chr']+"; PosType=G\n"
+					a=outFile.write(sjLine)
+					j+=1
+		print("tappAS-compatible gff3 generated: " + out)
+	else:
+
 	return	
 
 

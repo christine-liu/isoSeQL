@@ -17,8 +17,8 @@ def make_db(database):
 	c.execute("CREATE TABLE PBID (id INTEGER PRIMARY KEY, PBID TEXT, exp INTEGER, ends_id TEXT, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(ends_id) REFERENCES isoform_ends(id), UNIQUE(PBID, exp, ends_id))")
 	c.execute("CREATE TABLE txID (id INTEGER PRIMARY KEY, tx TEXT, exp INTEGER, isoform_id INTEGER, gene TEXT, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(isoform_id) REFERENCES isoform(id), UNIQUE(tx, exp, isoform_id))")
 	c.execute("CREATE TABLE scInfo (id INTEGER PRIMARY KEY, exp INTEGER, barcode TEXT, celltype TEXT, FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(id, exp, barcode, celltype))")
-	c.execute("CREATE TABLE scCounts (isoform_id INTEGER, scID INTEGER, read_count INTEGER, FOREIGN KEY(isoform_id) REFERENCES isoform(id), FOREIGN KEY(scID) REFERENCES scInfo(id), UNIQUE(isoform_id, scID, read_count))")
-	c.execute("CREATE TABLE scCounts_ends (ends_id TEXT, scID INTEGER, read_count INTEGER, FOREIGN KEY(ends_id) REFERENCES isoform_ends(id), FOREIGN KEY(scID) REFERENCES scInfo(id), UNIQUE(ends_id, scID, read_count))")
+	c.execute("CREATE TABLE scCounts (isoform_id INTEGER, scID INTEGER, read_count INTEGER, FOREIGN KEY(isoform_id) REFERENCES isoform(id), FOREIGN KEY(scID) REFERENCES scInfo(id), UNIQUE(isoform_id, scID))")
+	c.execute("CREATE TABLE scCounts_ends (ends_id TEXT, scID INTEGER, read_count INTEGER, FOREIGN KEY(ends_id) REFERENCES isoform_ends(id), FOREIGN KEY(scID) REFERENCES scInfo(id), UNIQUE(ends_id, scID))")
 
 	conn.commit()
 	conn.close()
@@ -99,7 +99,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 						exit
 					else:
 						scID = scID[0][0]
-						c.execute('INSERT INTO scCounts_ends(ends_id, scID, read_count) VALUES (?,?,?)', (isoEndID, scID, len(UMIs[iso][barcode],)))
+						c.execute('INSERT INTO scCounts_ends(ends_id, scID, read_count) VALUES (?,?,?)', (isoEndID, scID, len(UMIs[iso][barcode]),))
 						#need to check then for each isoform and where to add the counts, all isoforms should be in the database b/c parse classif first
 
 					#is it any faster to parse through all isoforms and then each cell associated with each isoform vs each cell and then each isoform for every cell?

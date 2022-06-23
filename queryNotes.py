@@ -303,3 +303,12 @@ commonJxn_counts = pd.read_sql("SELECT isoform_id, exp, read_count FROM counts W
 
 gene_counts = pd.read_sql("SELECT c.isoform_id, c.exp, c.read_count, i.gene FROM counts c INNER JOIN isoform i on i.id=c.isoform_id WHERE exp IN(%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
 test = gene_counts.groupby(['exp', 'gene'])['read_count'].sum().reset_index()
+
+
+#tappASgff doesn't work b/c changed ends_id naming scheme
+gff3TX=pd.read_sql("SELECT DISTINCT x.id, i.chr, i.strand, i.gene, i.junctions, i.category, x.start, x.end, x.ex_sizes, t.tx FROM isoform i LEFT OUTER JOIN txID t on i.id=t.isoform_id INNER JOIN isoform_ends x on x.isoform_id==i.id WHERE x.id IN (SELECT e.ends_id FROM ends_counts e WHERE e.exp IN (%s)) " % ','.join('?' for i in exp_list), conn, params=exp_list)
+
+endsInfo=pd.read_sql("SELECT id, isoform_id,start, end, ex_sizes FROM isoform_ends WHERE id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
+isoInfo= pd.read_sql("SELECT i.id, i.chr, i.strand, i.gene, i.junctions, i.category, t.tx FROM isoform i INNER JOIN txID t on i.id=t.isoform_id WHERE i.id IN (SELECT isoform_id FROM counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
+isoInfo.rename(columns={'id':'isoform_id'}, inplace=True)
+

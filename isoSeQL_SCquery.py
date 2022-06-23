@@ -144,7 +144,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 		for x in df_gene.tx.unique():
 			plot_df=df_gene[df_gene.tx==x]
 			fig.add_trace(go.Bar(x=[plot_df.exp, plot_df.celltype],y=plot_df.Proportion,name=x))
-		fileName=outPrefix+"_FSM_"+g+".pdf"
+		fileName=outPrefix+"_FSMsc_"+g+".pdf"
 		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
 	return
@@ -158,11 +158,11 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
 	if gene:
-		counts = pd.read_sql("SELECT c.isoform_id, c.exp, c.read_count, i.gene FROM counts c INNER JOIN isoform i on i.id=c.isoform_id WHERE exp IN(%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
-		geneSum = counts.groupby(['exp', 'gene'])['read_count'].sum().reset_index()
-		pivot = geneSum.pivot(index="gene", columns="exp", values="read_count")
+		counts = pd.read_sql("SELECT s.exp, SUM(c.read_count), i.gene, s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id  INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN(%s)) GROUP BY exp, gene, celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+		counts["exp_celltype"]=counts["exp"].astype(str)+"_"+counts["celltype"].astype(str)
+		pivot = counts.pivot(index="gene", columns="exp_celltype", values="SUM(c.read_count)")
 		pivot = pivot.fillna(0)
-		filename=outPrefix+"_gene_counts_matrix.txt"
+		filename=outPrefix+"_gene_SCcounts_matrix.txt"
 		pivot.to_csv(filename, sep='\t', index=True, header=False)
 		header="\t"+"\t".join(str(x) for x in pivot.columns.tolist()) + "\n"
 		with open (filename, "r+") as f: s=f.read(); f.seek(0); f.write(header+s)
@@ -170,21 +170,22 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 		return
 	else:
 		if not variable:
-			commonJxn_counts = pd.read_sql("SELECT isoform_id, exp, read_count FROM counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
-			pivot=commonJxn_counts.pivot(index="isoform_id", columns="exp", values="read_count")
+			commonJxn_counts = pd.read_sql("SELECT c.isoform_id, s.exp, SUM(c.read_count), s.celltype FROM scCounts c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY exp, isoform_id, celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+			commonJxn_counts["exp_celltype"]=commonJxn_counts["exp"].astype(str)+"_"+commonJxn_counts["celltype"].astype(str)
+			pivot=commonJxn_counts.pivot(index="isoform_id", columns="exp_celltype", values="SUM(c.read_count)")
 			pivot=pivot.fillna(0)
-			filename=outPrefix+"_commonJxn_counts_matrix.txt"
+			filename=outPrefix+"_commonJxn_SCcounts_matrix.txt"
 			pivot.to_csv(filename, sep='\t', index=True, header=False)
 			header="\t"+"\t".join(str(x) for x in pivot.columns.tolist()) + "\n"
 			with open(filename, "r+") as f: s=f.read(); f.seek(0); f.write(header + s)
 			print("Common Junction counts matrix saved: " + filename)
 			return
 		else:
-			varEnds_counts = pd.read_sql("SELECT x.isoform_id, x.start, x.end, e.exp, e.read_count FROM isoform_ends x INNER JOIN ends_counts e on x.id=e.ends_id WHERE x.id IN (SELECT ends_id FROM ends_counts e WHERE exp IN (%s)) " % ','.join('?' for i in exp_list), conn, params=exp_list)
-			varEnds_counts['isoform'] = varEnds_counts['isoform_id'].map(str)+'_'+varEnds_counts['start'].map(str)+'_'+varEnds_counts['end'].map(str)
-			pivot = varEnds_counts.pivot(index="isoform", columns="exp", values="read_count")
+			varEnds_counts = pd.read_sql("SELECT c.ends_id, s.exp, SUM(c.read_count), s.celltype FROM scCounts_ends c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY exp, ends_id, celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+			varEnds_counts["exp_celltype"]=varEnds_counts["exp"].astype(str)+"_"+varEnds_counts["celltype"].astype(str)
+			pivot = varEnds_counts.pivot(index="ends_id", columns="exp_celltype", values="SUM(c.read_count)")
 			pivot=pivot.fillna(0)
-			filename=outPrefix+"_variableEnds_counts_matrix.txt"
+			filename=outPrefix+"_variableEnds_SCcounts_matrix.txt"
 			pivot.to_csv(filename, sep='\t', index=True, header=False)
 			header="\t"+"\t".join(str(x) for x in pivot.columns.tolist()) + "\n"
 			with open(filename, "r+") as f: s=f.read(); f.seek(0); f.write(header + s)
