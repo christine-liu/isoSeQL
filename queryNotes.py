@@ -311,4 +311,8 @@ gff3TX=pd.read_sql("SELECT DISTINCT x.id, i.chr, i.strand, i.gene, i.junctions, 
 endsInfo=pd.read_sql("SELECT id, isoform_id,start, end, ex_sizes FROM isoform_ends WHERE id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
 isoInfo= pd.read_sql("SELECT i.id, i.chr, i.strand, i.gene, i.junctions, i.category, t.tx FROM isoform i INNER JOIN txID t on i.id=t.isoform_id WHERE i.id IN (SELECT isoform_id FROM counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
 isoInfo.rename(columns={'id':'isoform_id'}, inplace=True)
+gff3TX=isoInfo.merge(endsInfo, on=['isoform_id'])
 
+df_IEJ=pd.read_sql("SELECT i.id, i.gene, c.exp, c.read_count FROM isoform i INNER JOIN counts c on c.isoform_id = i.id WHERE i.IEJ = 'TRUE' AND c.exp IN (%s) " % ','.join('?' for i in exp_list), conn, params=exp_list)
+
+df_IEJ=pd.read_sql("SELECT x.id, i.gene, c.exp, c.read_count FROM isoform_ends x INNER JOIN ends_counts c on x.id=c.ends_id INNER JOIN isoform i on x.isoform_id=i.id WHERE i.id IN (SELECT id FROM isoform WHERE IEJ='TRUE') AND c.exp IN (%s) " % ','.join("?" for i in exp_list), conn, params=exp_list)
