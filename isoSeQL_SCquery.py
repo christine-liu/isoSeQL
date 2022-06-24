@@ -192,18 +192,30 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 			print("Variable ends counts matrix saved: " + filename)
 			return
 
-def IEJ_table(db, exp, out):
+def IEJ_table(db, exp, outPrefix, variable=False):
 	conn=sqlite3.connect(db)
 	c=conn.cursor()
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
-	df_IEJ=pd.read_sql("SELECT x.id, i.gene, c.exp, c.read_count FROM isoform_ends x INNER JOIN ends_counts c on x.id=c.ends_id INNER JOIN isoform i on x.isoform_id=i.id WHERE i.id IN (SELECT id FROM isoform WHERE IEJ='TRUE') AND c.exp IN (%s) " % ','.join("?" for i in exp_list), conn, params=exp_list)
-	df_IEJ['IEJ_id'] = df_IEJ['gene'] + "_" + df_IEJ['id'].astype(str)
-	df_IEJ_pivot=df_IEJ.pivot(index="IEJ_id", columns="exp", values="read_count")
-	df_IEJ_pivot=df_IEJ_pivot.fillna(0)
-	df_IEJ_pivot.to_csv(out, sep='\t')
-	print("IEJ table saved: " + out)
+	if variable:
+		df_IEJ=pd.read_sql("SELECT x.id, i.gene, s.exp, SUM(c.read_count), s.celltype FROM isoform_ends x INNER JOIN scCounts_ends c on x.id=c.ends_id INNER JOIN isoform i on x.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE IEJ='TRUE') AND s.exp IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY x.id, i.gene, s.exp, s.celltype" % ','.join("?" for i in exp_list), conn, params=exp_list)
+		df_IEJ['IEJ_id'] = df_IEJ['gene'] + "_" + df_IEJ['id'].astype(str)
+		df_IEJ['exp_celltype']=df_IEJ['exp'].astype(str)+"_"+df_IEJ['celltype'].astype(str)
+		df_IEJ_pivot=df_IEJ.pivot(index="IEJ_id", columns="exp_celltype", values="SUM(c.read_count)")
+		df_IEJ_pivot=df_IEJ_pivot.fillna(0)
+		outFile=outPrefix+"_variableEnds_IEJs.txt"
+		df_IEJ_pivot.to_csv(outFile, sep='\t')
+		print("IEJ table saved: " + outFile)
+	else:
+		df_IEJ=pd.read_sql("SELECT i.id, i.gene, s.exp, SUM(c.read_count), s.celltype FROM isoform i INNER JOIN scCounts c on i.id=c.isoform_id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE IEJ='TRUE') AND s.exp IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY i.id, i.gene, s.exp, s.celltype" % ','.join("?" for i in exp_list), conn, params=exp_list)
+		df_IEJ['IEJ_id'] = df_IEJ['gene'] + "_" + df_IEJ['id'].astype(str)
+		df_IEJ['exp_celltype']=df_IEJ['exp'].astype(str)+"_"+df_IEJ['celltype'].astype(str)
+		df_IEJ_pivot=df_IEJ.pivot(index="IEJ_id", columns="exp_celltype", values="SUM(c.read_count)")
+		df_IEJ_pivot=df_IEJ_pivot.fillna(0)
+		outFile=outPrefix+"_commonJxns_IEJs.txt"
+		df_IEJ_pivot.to_csv(outFile, sep='\t')
+		print("IEJ table saved: " + outFile)
 	return
 
 def main():
@@ -224,6 +236,11 @@ def main():
 	countMat_parser.add_argument('--outPrefix')
 	countMat_parser.add_argument('--gene', action='store_true')
 	countMat_parser.add_argument('--variable', action='store_true')
+	IEJ_parser = subparsers.add_parser("SCIEJ")
+	IEJ_parser.add_argument('--db')
+	IEJ_parser.add_argument('--exp')
+	IEJ_parser.add_argument('--outPrefix')
+	IEJ_parser.add_argument('--variable', action='store_true')
 	
 	args=parser.parse_args()
 	if args.subparser_name == "SCisoProp":
