@@ -258,6 +258,10 @@ def main():
 		countMatrix(args.db, args.exp, args.outPrefix, args.gene, args.variable)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="SCIEJ"
+		start=timeit.default_timer()
+		IEJ_table(args.db, args.exp, args.outPrefix, args.variable)
+		print("Complete in {0} sec.".format(stoop-start), file=sys.stderr)
 	else:
 		print("\n***ERROR***\n"+args.subparser_name+" is not an option.\n**********\n")
 
