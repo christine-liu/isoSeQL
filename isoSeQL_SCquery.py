@@ -204,7 +204,7 @@ def IEJ_table(db, exp, outPrefix, variable=False):
 		df_IEJ['exp_celltype']=df_IEJ['exp'].astype(str)+"_"+df_IEJ['celltype'].astype(str)
 		df_IEJ_pivot=df_IEJ.pivot(index="IEJ_id", columns="exp_celltype", values="SUM(c.read_count)")
 		df_IEJ_pivot=df_IEJ_pivot.fillna(0)
-		outFile=outPrefix+"_variableEnds_IEJs.txt"
+		outFile=outPrefix+"_variableEnds_scIEJs.txt"
 		df_IEJ_pivot.to_csv(outFile, sep='\t')
 		print("IEJ table saved: " + outFile)
 	else:
@@ -213,7 +213,7 @@ def IEJ_table(db, exp, outPrefix, variable=False):
 		df_IEJ['exp_celltype']=df_IEJ['exp'].astype(str)+"_"+df_IEJ['celltype'].astype(str)
 		df_IEJ_pivot=df_IEJ.pivot(index="IEJ_id", columns="exp_celltype", values="SUM(c.read_count)")
 		df_IEJ_pivot=df_IEJ_pivot.fillna(0)
-		outFile=outPrefix+"_commonJxns_IEJs.txt"
+		outFile=outPrefix+"_commonJxns_scIEJs.txt"
 		df_IEJ_pivot.to_csv(outFile, sep='\t')
 		print("IEJ table saved: " + outFile)
 	return

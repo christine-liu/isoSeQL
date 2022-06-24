@@ -151,7 +151,7 @@ def IEJ_table(db, exp, outPrefix, variable=False):
 		df_IEJ['IEJ_id'] = df_IEJ['gene'] + "_" + df_IEJ['id'].astype(str)
 		df_IEJ_pivot=df_IEJ.pivot(index="IEJ_id", columns="exp", values="read_count")
 		df_IEJ_pivot=df_IEJ_pivot.fillna(0)
-		outFile=outPrefix+"commonJxn_IEJs.txt"
+		outFile=outPrefix+"_commonJxn_IEJs.txt"
 		df_IEJ_pivot.to_csv(outFile, sep='\t')
 		print("IEJ table saved: " + outFile)
 	return
