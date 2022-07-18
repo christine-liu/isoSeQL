@@ -21,16 +21,16 @@ def main():
 	#check for file existence
 	errorMsg=""
 	if not os.path.isfile(args.classif):
-		errorMsg+="\n***EXIT***\n classif file: " + arg.classif + " not found.\n**********\n"
+		errorMsg+="\n***EXIT***\n classif file: " + args.classif + " not found.\n**********\n"
 	if not os.path.isfile(args.genePred):
-		errorMsg+="\n***EXIT***\n genePred file: " + arg.genePred + " not found.\n**********\n"
+		errorMsg+="\n***EXIT***\n genePred file: " + args.genePred + " not found.\n**********\n"
 	if not os.path.isfile(args.sampleConfig):
-		errorMsg+="\n***EXIT***\n sampleConfig file: " + arg.sampleConfig + " not found.\n**********\n"
+		errorMsg+="\n***EXIT***\n sampleConfig file: " + args.sampleConfig + " not found.\n**********\n"
 	if not os.path.isfile(args.expConfig):
-		errorMsg+="\n***EXIT***\n expConfig file: " + arg.expConfig + " not found.\n**********\n"
+		errorMsg+="\n***EXIT***\n expConfig file: " + args.expConfig + " not found.\n**********\n"
 	if args.sc:
-		if not os.path.isfile(args.args.sc):
-			errorMsg+="\n***EXIT***\n singlecell file: " + arg.sc + " not found.\n**********\n"
+		if not os.path.isfile(args.sc):
+			errorMsg+="\n***EXIT***\n singlecell file: " + args.sc + " not found.\n**********\n"
 	if errorMsg!="":
 		print(errorMsg)
 		sys.exit()
