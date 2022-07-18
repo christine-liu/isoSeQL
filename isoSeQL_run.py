@@ -22,18 +22,20 @@ def main():
 	errorMsg=""
 	if not os.path.isfile(args.classif):
 		errorMsg+="\n***EXIT***\n classif file: " + arg.classif + " not found.\n**********\n"
-	if not os.path.isfile(args.genePred)
+	if not os.path.isfile(args.genePred):
 		errorMsg+="\n***EXIT***\n genePred file: " + arg.genePred + " not found.\n**********\n"
-	if not os.path.isfile(args.sampleConfig)
+	if not os.path.isfile(args.sampleConfig):
 		errorMsg+="\n***EXIT***\n sampleConfig file: " + arg.sampleConfig + " not found.\n**********\n"
-	if not os.path.isfile(args.expConfig)
+	if not os.path.isfile(args.expConfig):
 		errorMsg+="\n***EXIT***\n expConfig file: " + arg.expConfig + " not found.\n**********\n"
 	if args.sc:
 		if not os.path.isfile(args.args.sc):
 			errorMsg+="\n***EXIT***\n singlecell file: " + arg.sc + " not found.\n**********\n"
 	if errorMsg!="":
 		print(errorMsg)
-		sys.exit()		
+		sys.exit(
+	else:
+		print("\nAll files located.\n")		
 
 	classifInfo=fileParse.parse_classification(args.classif)
 	genePredInfo=fileParse.parse_genePred(args.genePred)
