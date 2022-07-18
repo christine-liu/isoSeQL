@@ -18,6 +18,23 @@ def main():
 	parser.add_argument("--sc", default=None, help='path to annotated csv')
 
 	args=parser.parse_args()
+	#check for file existence
+	errorMsg=""
+	if not os.path.isfile(args.classif):
+		errorMsg+="\n***EXIT***\n classif file: " + arg.classif + " not found.\n**********\n"
+	if not os.path.isfile(args.genePred)
+		errorMsg+="\n***EXIT***\n genePred file: " + arg.genePred + " not found.\n**********\n"
+	if not os.path.isfile(args.sampleConfig)
+		errorMsg+="\n***EXIT***\n sampleConfig file: " + arg.sampleConfig + " not found.\n**********\n"
+	if not os.path.isfile(args.expConfig)
+		errorMsg+="\n***EXIT***\n expConfig file: " + arg.expConfig + " not found.\n**********\n"
+	if args.sc:
+		if not os.path.isfile(args.args.sc):
+			errorMsg+="\n***EXIT***\n singlecell file: " + arg.sc + " not found.\n**********\n"
+	if errorMsg!="":
+		print(errorMsg)
+		sys.exit()		
+
 	classifInfo=fileParse.parse_classification(args.classif)
 	genePredInfo=fileParse.parse_genePred(args.genePred)
 	if args.sc:
@@ -25,7 +42,6 @@ def main():
 	else:
 		scInfo=None
 		UMIs=None
-
 	if not os.path.isfile(args.db):
 		sqlDB.make_db(args.db)
 	sampleID=sqlDB.addSampleData(args.db, args.sampleConfig)
