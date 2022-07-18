@@ -21,18 +21,18 @@ def main():
 	#check for file existence
 	errorMsg=""
 	if not os.path.isfile(args.classif):
-		errorMsg+="\n***EXIT***\n classif file: " + args.classif + " not found.\n**********\n"
+		errorMsg+="\nclassif file: " + args.classif + " not found.\n"
 	if not os.path.isfile(args.genePred):
-		errorMsg+="\n***EXIT***\n genePred file: " + args.genePred + " not found.\n**********\n"
+		errorMsg+="\ngenePred file: " + args.genePred + " not found.\n"
 	if not os.path.isfile(args.sampleConfig):
-		errorMsg+="\n***EXIT***\n sampleConfig file: " + args.sampleConfig + " not found.\n**********\n"
+		errorMsg+="\nsampleConfig file: " + args.sampleConfig + " not found.\n"
 	if not os.path.isfile(args.expConfig):
-		errorMsg+="\n***EXIT***\n expConfig file: " + args.expConfig + " not found.\n**********\n"
+		errorMsg+="\nexpConfig file: " + args.expConfig + " not found.\n"
 	if args.sc:
 		if not os.path.isfile(args.sc):
-			errorMsg+="\n***EXIT***\n singlecell file: " + args.sc + " not found.\n**********\n"
+			errorMsg+="\nsinglecell file: " + args.sc + " not found.\n"
 	if errorMsg!="":
-		print(errorMsg)
+		print("\n***EXIT***\n"+errorMsg+"\n**********\n")
 		sys.exit()
 	else:
 		print("\nAll files located.\n")		
