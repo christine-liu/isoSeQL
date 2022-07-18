@@ -33,7 +33,7 @@ def main():
 			errorMsg+="\n***EXIT***\n singlecell file: " + arg.sc + " not found.\n**********\n"
 	if errorMsg!="":
 		print(errorMsg)
-		sys.exit(
+		sys.exit()
 	else:
 		print("\nAll files located.\n")		
 
