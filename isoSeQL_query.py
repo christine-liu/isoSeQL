@@ -99,7 +99,7 @@ def make_bed(db, exp, outPrefix, name):
 		filename=outPrefix+"_"+name_list[e]+".bed"
 		df_bed.to_csv(filename, sep='\t', index=False, header=False)
 		header="track visibility=2 itemRgb=On name='"+name_list[e]+"'\n"
-		with open(filename, "r+") as f: s=f.read(); f.seek(0); f.write(header + s)
+		with open(filename, "r+") as f: s=f.readlines(); s.insert(0, header), f.seek(0); f.writelines(s)
 		print("Bedfile saved: " + filename)
 		e+=1
 	return
