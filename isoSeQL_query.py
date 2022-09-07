@@ -26,8 +26,6 @@ def isoprop_plot(db, exp, outPrefix):
 	calc_totals.rename(columns={'COUNT(i.category)':'Total'}, inplace=True)
 	prop=df_prop.merge(calc_totals, on=['exp'])
 	prop['Proportion']=prop['COUNT(i.category)']/prop['Total']
-	prop['exp']=pd.Categorical(prop['exp'], categories=[int(i) for i in exp_list], ordered=True)
-	prop=prop.sort_values("exp")
 	fig = go.Figure()
 	fig.update_layout(
 		template="simple_white",
@@ -57,8 +55,6 @@ def isoprop_plot(db, exp, outPrefix):
 	calc_totals.rename(columns={'SUM(c.read_count)':'Total'}, inplace=True)
 	prop=df_exp_read.merge(calc_totals, on=['exp'])
 	prop['Proportion']=prop['SUM(c.read_count)']/prop['Total']
-	prop['exp']=pd.Categorical(prop['exp'], categories=[int(i) for i in exp_list], ordered=True)
-	prop=prop.sort_values("exp")
 	fig = go.Figure()
 	fig.update_layout(
 		template="simple_white",
