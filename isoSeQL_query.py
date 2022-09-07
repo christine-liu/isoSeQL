@@ -36,7 +36,7 @@ def isoprop_plot(db, exp, outPrefix):
 		barmode="stack",
 		xaxis_type='category'
 	)
-	fig.updatexaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
+	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
 	category2plot.sort()
 	colors=[colorDict[i] for i in category2plot]
@@ -67,7 +67,7 @@ def isoprop_plot(db, exp, outPrefix):
 		barmode="stack",
 		xaxis_type='category'
 	)
-	fig.updatexaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
+	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
 	category2plot.sort()
 	colors=[colorDict[i] for i in category2plot]
