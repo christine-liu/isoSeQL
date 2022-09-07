@@ -34,7 +34,9 @@ def isoprop_plot(db, exp, outPrefix):
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion"),
 		barmode="stack",
+		xaxis_type='category'
 	)
+	fig.updatexaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
 	category2plot.sort()
 	colors=[colorDict[i] for i in category2plot]
@@ -43,7 +45,6 @@ def isoprop_plot(db, exp, outPrefix):
 		fig.add_trace(
 			go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=col),
     )
-	fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoPropTable.txt"
 	prop.to_csv(tableFile, sep='\t', index=False, header=True)
 	print("Isoform proportions table saved: " + tableFile)
@@ -64,7 +65,9 @@ def isoprop_plot(db, exp, outPrefix):
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion"),
 		barmode="stack",
+		xaxis_type='category'
 	)
+	fig.updatexaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
 	category2plot.sort()
 	colors=[colorDict[i] for i in category2plot]
@@ -73,7 +76,6 @@ def isoprop_plot(db, exp, outPrefix):
 		fig.add_trace(
 			go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=col),
     )
-	fig.update_layout(xaxis_type='category')
 	tableFile=outPrefix+"_isoReadsPropTable.txt"
 	prop.to_csv(tableFile, sep='\t', index=False, header=True)
 	print("Isoform read proportions table saved: " + tableFile)
