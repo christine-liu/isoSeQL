@@ -38,7 +38,7 @@ def isoprop_plot(db, exp, outPrefix):
 	category2plot=prop.category.unique().tolist()
 	category2plot.sort()
 	colors=[colorDict[i] for i in category2plot]
-	for r, col in zip(prop.category.unique(), colors):
+	for r, col in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
 			go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=col),
@@ -68,7 +68,7 @@ def isoprop_plot(db, exp, outPrefix):
 	category2plot=prop.category.unique().tolist()
 	category2plot.sort()
 	colors=[colorDict[i] for i in category2plot]
-	for r, col in zip(prop.category.unique(), colors):
+	for r, col in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
 		fig.add_trace(
 			go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=r, marker_color=col),
