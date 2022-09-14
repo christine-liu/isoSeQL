@@ -7,7 +7,7 @@ def make_db(database):
 	conn=sqlite3.connect(database)
 	c=conn.cursor()
 	c.execute("CREATE TABLE versionInfo (name TEXT PRIMARY KEY, visoSeQL TEXT)")
-	c.execute("INSERT INTO versionInfo(name, visoSeQL) VALUES (?,?)", (database, 'v1.0.1'))
+	c.execute("INSERT INTO versionInfo(name, visoSeQL) VALUES (?,?)", (database, 'v1.0.2'))
 	c.execute("CREATE TABLE isoform (id INTEGER PRIMARY KEY, chr TEXT, strand TEXT, junctions TEXT, gene TEXT, iso_exons INTEGER, subcategory TEXT, canonical TEXT, IEJ INTEGER, category TEXT, UNIQUE(chr, strand, junctions, gene))")
 	c.execute("CREATE TABLE isoform_ends (id TEXT PRIMARY KEY, isoform_id INTEGER, chr TEXT, start INTEGER, end INTEGER, ex_sizes TEXT, ex_starts TEXT, FOREIGN KEY(isoform_id) REFERENCES isoform(id), UNIQUE(isoform_id, chr, start, end))")
 	c.execute("CREATE TABLE counts (id INTEGER PRIMARY KEY, isoform_id INTEGER, exp INTEGER, read_count INTEGER, FOREIGN KEY(isoform_id) REFERENCES isoform(id),FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(isoform_id, exp))")
@@ -15,7 +15,7 @@ def make_db(database):
 	c.execute("CREATE TABLE exp (id INTEGER PRIMARY KEY, sample_id INTEGER, RIN REAL, seq_date DATE, platform TEXT, method TEXT, vMap TEXT, vReference TEXT, vAnnot TEXT, vLima TEXT, vCCS TEXT, vIsoseq3 TEXT, vCupcake TEXT, vSQANTI TEXT, exp_name TEXT, FOREIGN KEY(sample_id) REFERENCES sampleData(id), UNIQUE(sample_id, RIN, seq_date, platform, method, vMap, vReference, vAnnot, vLima, vCCS, vIsoseq3, vCupcake, vSQANTI, exp_name))")
 	c.execute("CREATE TABLE sampleData (id INTEGER PRIMARY KEY, sample_name TEXT, tissue TEXT, disease TEXT, age INTEGER, sex TEXT,UNIQUE(sample_name, tissue, disease, age, sex))")
 	c.execute("CREATE TABLE PBID (id INTEGER PRIMARY KEY, PBID TEXT, exp INTEGER, ends_id TEXT, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(ends_id) REFERENCES isoform_ends(id), UNIQUE(PBID, exp, ends_id))")
-	c.execute("CREATE TABLE txID (id INTEGER PRIMARY KEY, tx TEXT, exp INTEGER, isoform_id INTEGER, gene TEXT, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(isoform_id) REFERENCES isoform(id), UNIQUE(tx, exp, isoform_id))")
+	c.execute("CREATE TABLE txID (id INTEGER PRIMARY KEY, tx TEXT, exp INTEGER, isoform_id INTEGER, ends_id INTEGER, gene TEXT, FOREIGN KEY(exp) REFERENCES exp(id), FOREIGN KEY(isoform_id) REFERENCES isoform(id), FOREIGN KEY(ends_id) REFERENCES isoform_ends(id), UNIQUE(tx, exp, isoform_id, ends_id))")
 	c.execute("CREATE TABLE scInfo (id INTEGER PRIMARY KEY, exp INTEGER, barcode TEXT, celltype TEXT, FOREIGN KEY(exp) REFERENCES exp(id), UNIQUE(id, exp, barcode, celltype))")
 	c.execute("CREATE TABLE scCounts (isoform_id INTEGER, scID INTEGER, read_count INTEGER, FOREIGN KEY(isoform_id) REFERENCES isoform(id), FOREIGN KEY(scID) REFERENCES scInfo(id), UNIQUE(isoform_id, scID))")
 	c.execute("CREATE TABLE scCounts_ends (ends_id TEXT, scID INTEGER, read_count INTEGER, FOREIGN KEY(ends_id) REFERENCES isoform_ends(id), FOREIGN KEY(scID) REFERENCES scInfo(id), UNIQUE(ends_id, scID))")
@@ -89,7 +89,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 			observedIsoEnd.add(isoEndID)
 			c.execute('INSERT INTO PBID(PBID, exp, ends_id) VALUES (?,?,?)', (iso, expID, isoEndID)) #add in PBID info to match back to original SQANTI3 output files
 			if classif[iso].cat == "full-splice_match" or classif[iso].cat=="incomplete-splice_match":
-				c.execute('INSERT OR IGNORE INTO txID(isoform_id, exp, tx, gene) VALUES (?,?,?,?)', (isoID, expID, classif[iso].transcript, classif[iso].gene)) #keep track of txIDs
+				c.execute('INSERT OR IGNORE INTO txID(isoform_id, ends_id, exp, tx, gene) VALUES (?,?,?,?,?)', (isoID,isoEndID,expID, classif[iso].transcript, classif[iso].gene)) #keep track of txIDs
 			if iso in UMIs.keys():
 				for barcode in UMIs[iso].keys():
 					c.execute('SELECT id FROM scInfo WHERE exp = ? AND barcode = ?', (expID, barcode))
@@ -139,7 +139,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 			c.execute('INSERT INTO ends_counts(ends_id, exp, read_count) VALUES (?,?,?)', (isoEndID, expID, classif[iso].count)) #should be no repeats of exact isoforms in an exp, so can just directly add counts to table
 			c.execute('INSERT INTO PBID(PBID, exp, ends_id) VALUES (?,?,?)', (iso, expID, isoEndID)) #add in PBID info to match back to original SQANTI3 output files
 			if classif[iso].cat == "full-splice_match" or classif[iso].cat=="incomplete-splice_match":
-				c.execute('INSERT OR IGNORE INTO txID(isoform_id, exp, tx, gene) VALUES (?,?,?,?)', (isoID, expID, classif[iso].transcript, classif[iso].gene)) #keep track of txIDs
+				c.execute('INSERT OR IGNORE INTO txID(isoform_id, ends_id, exp, tx, gene) VALUES (?,?,?,?,?)', (isoID, isoEndID, expID, classif[iso].transcript, classif[iso].gene)) #keep track of txIDs
 		for isoform in observedIso:
 		#query counts from matching isoform_ends ids and sum to get counts to add to counts table (and correspondingly for single-cell info)
 			c.execute('SELECT SUM(read_count) FROM ends_counts WHERE exp = ? AND ends_id IN (SELECT id FROM isoform_ends WHERE isoform_id = ?)', (expID, isoform,))
