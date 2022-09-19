@@ -121,7 +121,7 @@ def addIsoforms(database, classif, genePred, expID, scInfo=None, UMIs=None):
 
 	else:
 		for iso in classif.keys():
-			c.execute('SELECT id FROM isoform WHERE chr = ? AND strand = ? AND junctions = ? and gene = ?', (genePred[iso].chrom, genePred[iso].strand, str(genePred[iso].junctions), classif[iso].gene)) #check if isoform is already in table 
+			c.execute('SELECT id FROM isoform WHERE chr = ? AND strand = ? AND junctions = ? and gene = ? AND category = ?', (genePred[iso].chrom, genePred[iso].strand, str(genePred[iso].junctions), classif[iso].gene, classif[iso].cat)) #check if isoform is already in table 
 			isoID = c.fetchall()
 			if len(isoID) == 0:
 				c.execute('INSERT INTO isoform(chr, strand, junctions, gene, iso_exons, subcategory, canonical, IEJ, category) VALUES (?,?,?,?,?,?,?,?,?)', (genePred[iso].chrom, genePred[iso].strand, str(genePred[iso].junctions), classif[iso].gene, classif[iso].tx_exons, classif[iso].subcat, classif[iso].canonical, classif[iso].IEJ, classif[iso].cat,)) #if not add into table and return id 
