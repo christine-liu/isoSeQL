@@ -216,10 +216,11 @@ def tappASgff(db, exp, out):
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
-	endsInfo=pd.read_sql("SELECT id, isoform_id,start, end, ex_sizes FROM isoform_ends WHERE id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	isoInfo= pd.read_sql("SELECT i.id, i.chr, i.strand, i.gene, i.junctions, i.category,t.tx FROM isoform i INNER JOIN txID t on i.id=t.isoform_id WHERE i.id IN (SELECT isoform_id FROM counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	isoInfo.rename(columns={'id':'isoform_id'}, inplace=True)
-	gff3TX=isoInfo.merge(endsInfo, on=['isoform_id'])
+	endsInfo=pd.read_sql("SELECT DISTINCT id, isoform_id,start, end, ex_sizes FROM isoform_ends WHERE id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	isoInfo=pd.read_sql("SELECT id AS isoform_id,chr,strand,gene,junctions,category FROM isoform", conn)
+	gff3TX=endsInfo.merge(isoInfo, on=['isoform_id'], how='left')
+	ENST_info=pd.read_sql("SELECT DISTINCT ends_id AS id, tx FROM txID", conn)
+	gff3TX=gff3TX.merge(ENST_info, on=['id'], how='left')
 	gff3TX['tx'].replace(np.nan, "novel", inplace=True)
 	outFile = open(out, "w+")
 	for i, row in gff3TX.iterrows():
