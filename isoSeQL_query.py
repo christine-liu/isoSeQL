@@ -307,7 +307,7 @@ def main():
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name == "FSM":
 		start=timeit.default_timer()
-		gene_FSM(args.db, args.exp, args.outPrefix, args.genes, args.cutoff)
+		gene_FSM(args.db, args.exp, args.outPrefix, args.genes, int(args.cutoff))
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name == "IEJtab":
