@@ -118,10 +118,11 @@ def gene_FSM(db, exp, outPrefix, genes):
 	FSM_counts=iso.merge(ENST, on=['ends_id', 'exp'])
 	gene_totals=FSM_counts.groupby(['exp', 'gene'])['read_count'].sum().reset_index()
 	gene_totals.rename(columns={'read_count':'gene_total'}, inplace=True)
-	FSM_counts=FSM_counts.merge(gene_totals, on=['exp', 'gene'])
-	FSM_counts['Proportion']=FSM_counts['read_count']/FSM_counts['gene_total']
+	ENST_sum=FSM_counts.groupby(['exp', 'tx', 'gene'])['read_count'].sum().reset_index()
+	ENST_sum=ENST_sum.merge(gene_totals, on=['exp','gene'])
+	ENST_sum['Proportion']=ENST_sum['read_count']/ENST_sum['gene_total']
 	for g in gene_list:
-		df_gene=FSM_counts[(FSM_counts["gene"]==g)]
+		df_gene=ENST_sum[(ENST_sum["gene"]==g)]
 		fig = go.Figure()
 		fig.update_layout(
 			template="simple_white",
