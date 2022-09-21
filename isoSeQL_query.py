@@ -113,11 +113,13 @@ def gene_FSM(db, exp, outPrefix, genes):
 	gene_file=open(genes, "r")
 	gene_list=gene_file.readlines()
 	gene_list=[i.rstrip() for i in gene_list]
-	df_FSM = pd.read_sql("SELECT t.tx,c.read_count,c.exp,t.gene FROM counts c INNER JOIN txID t on t.isoform_id = c.isoform_id WHERE c.isoform_id IN (SELECT id from isoform WHERE category=='full-splice_match') AND c.exp IN (%s) GROUP BY t.gene,t.tx,c.exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	gene_totals = pd.read_sql("SELECT SUM(read_count),exp, gene FROM(SELECT t.tx,c.read_count,c.exp,t.gene FROM counts c INNER JOIN txID t on t.isoform_id = c.isoform_id WHERE c.isoform_id IN (SELECT id from isoform WHERE category=='full-splice_match') AND c.exp IN (%s) GROUP BY t.gene,t.tx,c.exp) GROUP BY exp, gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	gene_totals.rename(columns={'SUM(read_count)':'Total'}, inplace=True)
-	prop=df_FSM.merge(gene_totals, on=["exp", "gene"])
-	prop['Proportion']=prop['read_count']/prop['Total']
+	iso=pd.read_sql("SELECT read_count, exp, ends_id FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	ENST=pd.read_sql("SELECT ends_id, tx, exp, gene FROM txID WHERE isoform_id IN (SELECT id FROM isoform WHERE category=='full-splice_match')", conn)
+	FSM_counts=iso.merge(ENST, on=['ends_id', 'exp'])
+	gene_totals=FSM_counts.groupby(['exp', 'gene'])['read_count'].sum().reset_index()
+	gene_totals.rename(columns={'read_count':'gene_total'}, inplace=True)
+	FSM_counts=FSM_counts.merge(gene_totals, on=['exp', 'gene'])
+	FSM_counts['Proportion']=FSM_counts['read_count']/FSM_counts['gene_total']
 	for g in gene_list:
 		df_gene=prop[(prop["gene"]==g)]
 		fig = go.Figure()
