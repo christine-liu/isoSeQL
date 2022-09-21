@@ -126,7 +126,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 		if cutoff:
 			df_gene_plot=df_gene[(df_gene['gene_total']>cutoff)]
 			if df_gene_plot.empty:
-				print("No samples exceed cutoff, please pick a different number")
+				print("No samples exceed cutoff for " +g+ ", please pick a different number")
 		else:
 			df_gene_plot=df_gene
 		fig = go.Figure()
