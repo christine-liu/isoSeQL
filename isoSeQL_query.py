@@ -30,7 +30,7 @@ def isoprop_plot(db, exp, outPrefix):
 	fig.update_layout(
 		template="simple_white",
 		xaxis=dict(title_text="Exp"),
-		yaxis=dict(title_text="Proportion"),
+		yaxis=dict(title_text="Proportion of Isoforms"),
 		barmode="stack",
 		xaxis_type='category'
 	)
@@ -59,7 +59,7 @@ def isoprop_plot(db, exp, outPrefix):
 	fig.update_layout(
 		template="simple_white",
 		xaxis=dict(title_text="Exp"),
-		yaxis=dict(title_text="Proportion"),
+		yaxis=dict(title_text="Proportion of Reads"),
 		barmode="stack",
 		xaxis_type='category'
 	)
@@ -121,18 +121,19 @@ def gene_FSM(db, exp, outPrefix, genes):
 	FSM_counts=FSM_counts.merge(gene_totals, on=['exp', 'gene'])
 	FSM_counts['Proportion']=FSM_counts['read_count']/FSM_counts['gene_total']
 	for g in gene_list:
-		df_gene=prop[(prop["gene"]==g)]
+		df_gene=FSM_counts[(FSM_counts["gene"]==g)]
 		fig = go.Figure()
 		fig.update_layout(
 			template="simple_white",
 			xaxis=dict(title_text="Exp"),
-			yaxis=dict(title_text="Proportion"),
+			yaxis=dict(title_text="Proportion of Reads"),
 			barmode="stack",
+			xaxis_type='category'
 		)
 		for x in df_gene.tx.unique():
 			plot_df=df_gene[df_gene.tx==x]
 			fig.add_trace(go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=x))
-		fig.update_layout(xaxis_type='category')
+		fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
