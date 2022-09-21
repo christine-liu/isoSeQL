@@ -130,6 +130,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 			yaxis=dict(title_text="Proportion of Reads"),
 			barmode="stack",
 			xaxis_type='category'
+			showlegend=True
 		)
 		for x in df_gene.tx.unique():
 			plot_df=df_gene[df_gene.tx==x]
