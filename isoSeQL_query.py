@@ -104,7 +104,7 @@ def make_bed(db, exp, outPrefix, name):
 		e+=1
 	return
 
-def gene_FSM(db, exp, outPrefix, genes):
+def gene_FSM(db, exp, outPrefix, genes, cutoff):
 	conn=sqlite3.connect(db)
 	c=conn.cursor()
 	exp_file=open(exp, "r")
@@ -123,6 +123,12 @@ def gene_FSM(db, exp, outPrefix, genes):
 	ENST_sum['Proportion']=ENST_sum['read_count']/ENST_sum['gene_total']
 	for g in gene_list:
 		df_gene=ENST_sum[(ENST_sum["gene"]==g)]
+		if cutoff:
+			df_gene_plot=df_gene[(df_gene['gene_total']>cutoff)]
+			if df_gene_plot.empty:
+				print("No samples exceed cutoff, please pick a different number")
+		else:
+			df_gene_plot=df_gene
 		fig = go.Figure()
 		fig.update_layout(
 			template="simple_white",
@@ -132,8 +138,8 @@ def gene_FSM(db, exp, outPrefix, genes):
 			xaxis_type='category',
 			showlegend=True
 		)
-		for x in df_gene.tx.unique():
-			plot_df=df_gene[df_gene.tx==x]
+		for x in df_gene_plot.tx.unique():
+			plot_df=df_gene_plot[df_gene_plot.tx==x]
 			fig.add_trace(go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=x))
 		fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 		fileName=outPrefix+"_FSM_"+g+".pdf"
@@ -268,6 +274,7 @@ def main():
 	FSM_parser.add_argument('--exp')
 	FSM_parser.add_argument('--outPrefix')
 	FSM_parser.add_argument('--genes')
+	FSM_parser.add_argument('--cutoff')
 	IEJtab_parser = subparsers.add_parser('IEJtab')
 	IEJtab_parser.add_argument('--db')
 	IEJtab_parser.add_argument('--exp')
@@ -300,7 +307,7 @@ def main():
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name == "FSM":
 		start=timeit.default_timer()
-		gene_FSM(args.db, args.exp, args.outPrefix, args.genes)
+		gene_FSM(args.db, args.exp, args.outPrefix, args.genes, args.cutoff)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name == "IEJtab":
