@@ -366,6 +366,7 @@ def main():
 	elif args.subparser_name=="summary":
 		start=timeit.default_timer()
 		summaryTable(args.db, args.exp, args.outPrefix)
+		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	else:
 		print("\n***ERROR***\n"+args.subparser_name+" is not an option.\n**********\n")
