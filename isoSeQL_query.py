@@ -363,7 +363,7 @@ def main():
 		tappASgff(args.db, args.exp, args.out)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
-	elif args.subparser_name=="summary"
+	elif args.subparser_name=="summary":
 		start=timeit.default_timer()
 		summaryTable(args.db, args.exp, args.outPrefix)
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
