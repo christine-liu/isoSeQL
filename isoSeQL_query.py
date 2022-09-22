@@ -322,6 +322,10 @@ def main():
 	tappASgff_parser.add_argument('--db')
 	tappASgff_parser.add_argument('--exp')
 	tappASgff_parser.add_argument('--out')
+	summary_parser = subparsers.add_parser('summary')
+	summary_parser.add_argument('--db')
+	summary_parser.add_argument('--exp')
+	summary_parser.add_argument('--outPrefix')
 
 	args=parser.parse_args()
 	if args.subparser_name == "isoProp":
@@ -358,6 +362,10 @@ def main():
 		start=timeit.default_timer()
 		tappASgff(args.db, args.exp, args.out)
 		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="summary"
+		start=timeit.default_timer()
+		summaryTable(args.db, args.exp, args.outPrefix)
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	else:
 		print("\n***ERROR***\n"+args.subparser_name+" is not an option.\n**********\n")
