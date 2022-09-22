@@ -257,6 +257,34 @@ def tappASgff(db, exp, out):
 	print("tappAS-compatible gff3 generated: " + out)
 	return	
 
+def summaryTable(db, exp, outPrefix):
+	#makes table with isoform id, gene, category, subcategory, IEJ status and counts for each sample
+	#easy to sort/filter in excel 
+	conn=sqlite3.connect(db)
+	c=conn.cursor()
+	exp_file=open(exp, "r")
+	exp_list=exp_file.readlines()
+	exp_list=[i.rstrip() for i in exp_list]
+	#by isoforms with common jxns
+	isoformInfo =pd.read_sql("SELECT id AS isoform_id, gene, category, subcategory, IEJ FROM isoform", conn)
+	commonJxn_counts = pd.read_sql("SELECT isoform_id, exp, read_count FROM counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	pivot=commonJxn_counts.pivot(index="isoform_id", columns="exp", values="read_count")
+	pivot=pivot.fillna(0)
+	pivot_info = isoformInfo.merge(pivot, on=['isoform_id'])
+	pivotFile=outPrefix+"_commonJxn_allinfo_countMat.txt"
+	pivot_info.to_csv(pivotFile, sep='\t', index=False, header=True)
+	print("Common jxn isoform summary file saved: " + pivotFile)
+	#isoforms with variable ends
+	ends_info=pd.read_sql("SELECT id AS ends_id, start, end, isoform_id FROM isoform_ends", conn)
+	ends_counts = pd.read_sql("SELECT ends_id, exp, read_count FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	pivot_ends = ends_counts.pivot(index="ends_id", columns="exp", values="read_count")
+	pivot_ends=pivot_ends.fillna(0)
+	pivot_info_ends=ends_info.merge(pivot_ends, on=['ends_id'])
+	pivot_info_ends=isoformInfo.merge(pivot_info_ends, on=['isoform_id'])
+	pivot_endsFile=outPrefix+"_ends_allinfo_countMat.txt"
+	pivot_info_ends.to_csv(pivot_endsFile, sep='\t', index=False, header=True)
+	print("Variable ends isoform summary file saved: " + pivot_endsFile)
+	return
 
 def main():
 	parser=argparse.ArgumentParser(description="built-in queries to generate plots/tables/visualization of exp/genes of interest")
