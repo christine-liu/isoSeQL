@@ -190,6 +190,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 	exp_list=[i.rstrip() for i in exp_list]
 	if gene:
 		counts = pd.read_sql("SELECT c.isoform_id, c.exp, c.read_count, i.gene FROM counts c INNER JOIN isoform i on i.id=c.isoform_id WHERE exp IN(%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+		counts['exp']='E'+counts['exp'].astype(str) #tappAS errors out if sample names start with a number
 		geneSum = counts.groupby(['exp', 'gene'])['read_count'].sum().reset_index()
 		pivot = geneSum.pivot(index="gene", columns="exp", values="read_count")
 		pivot = pivot.fillna(0)
@@ -202,6 +203,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 	else:
 		if not variable:
 			commonJxn_counts = pd.read_sql("SELECT isoform_id, exp, read_count FROM counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+			commonJxn_counts['exp']='E'+commonJxn_counts['exp'].astype(str) #tappAS errors out if sample names start with a number
 			pivot=commonJxn_counts.pivot(index="isoform_id", columns="exp", values="read_count")
 			pivot=pivot.fillna(0)
 			filename=outPrefix+"_commonJxn_counts_matrix.txt"
@@ -212,6 +214,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 			return
 		else:
 			varEnds_counts = pd.read_sql("SELECT ends_id, exp, read_count FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+			varEnds_counts['exp']='E'+varEnds_counts['exp'].astype(str) #tappAS errors out if sample names start with a number
 			pivot = varEnds_counts.pivot(index="ends_id", columns="exp", values="read_count")
 			pivot=pivot.fillna(0)
 			filename=outPrefix+"_variableEnds_counts_matrix.txt"
