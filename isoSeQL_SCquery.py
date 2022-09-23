@@ -159,7 +159,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 	exp_list=[i.rstrip() for i in exp_list]
 	if gene:
 		counts = pd.read_sql("SELECT s.exp, SUM(c.read_count), i.gene, s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id  INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN(%s)) GROUP BY exp, gene, celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-		counts["exp_celltype"]=counts["exp"].astype(str)+"_"+counts["celltype"].astype(str)
+		counts["exp_celltype"]=counts["celltype"].astype(str)+"_"+counts["exp"].astype(str)
 		pivot = counts.pivot(index="gene", columns="exp_celltype", values="SUM(c.read_count)")
 		pivot = pivot.fillna(0)
 		filename=outPrefix+"_gene_SCcounts_matrix.txt"
@@ -171,7 +171,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 	else:
 		if not variable:
 			commonJxn_counts = pd.read_sql("SELECT c.isoform_id, s.exp, SUM(c.read_count), s.celltype FROM scCounts c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY exp, isoform_id, celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-			commonJxn_counts["exp_celltype"]=commonJxn_counts["exp"].astype(str)+"_"+commonJxn_counts["celltype"].astype(str)
+			commonJxn_counts["exp_celltype"]=commonJxn_counts["celltype"].astype(str)+"_"+commonJxn_counts["exp"].astype(str)
 			pivot=commonJxn_counts.pivot(index="isoform_id", columns="exp_celltype", values="SUM(c.read_count)")
 			pivot=pivot.fillna(0)
 			filename=outPrefix+"_commonJxn_SCcounts_matrix.txt"
@@ -182,7 +182,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 			return
 		else:
 			varEnds_counts = pd.read_sql("SELECT c.ends_id, s.exp, SUM(c.read_count), s.celltype FROM scCounts_ends c INNER JOIN scInfo s on s.id=c.scID WHERE c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s)) GROUP BY exp, ends_id, celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-			varEnds_counts["exp_celltype"]=varEnds_counts["exp"].astype(str)+"_"+varEnds_counts["celltype"].astype(str)
+			varEnds_counts["exp_celltype"]=varEnds_counts["celltype"].astype(str)+"_"+varEnds_counts["exp"].astype(str)
 			pivot = varEnds_counts.pivot(index="ends_id", columns="exp_celltype", values="SUM(c.read_count)")
 			pivot=pivot.fillna(0)
 			filename=outPrefix+"_variableEnds_SCcounts_matrix.txt"
