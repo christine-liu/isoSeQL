@@ -124,13 +124,25 @@ def gene_FSM(db, exp, outPrefix, genes):
 	gene_file=open(genes, "r")
 	gene_list=gene_file.readlines()
 	gene_list=[i.rstrip() for i in gene_list]
-	df_FSM = pd.read_sql("SELECT tx,gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY tx,gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	FSM_total=pd.read_sql("SELECT gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	FSM_total.rename(columns={'SUM(read_count)':'Total'}, inplace=True)
-	prop=df_FSM.merge(FSM_total, on=['exp','gene','celltype'])
-	prop['Proportion']=prop['SUM(read_count)']/prop['Total']
-	prop.celltype=pd.Categorical(prop.celltype, categories=['Ast', 'Ex', 'Inh', 'Mic', 'OPC', 'Oli', 'Per', 'End', 'NA'])
-	prop=prop.sort_values("celltype")
+	# df_FSM = pd.read_sql("SELECT tx,gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY tx,gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	# FSM_total=pd.read_sql("SELECT gene,SUM(read_count), exp, celltype FROM (SELECT DISTINCT t.tx,t.gene,i.id,c.scID,c.read_count,s.exp,s.celltype FROM scCounts c INNER JOIN isoform i on i.id=c.isoform_id OUTER LEFT JOIN txID t on t.isoform_id=i.id INNER JOIN scInfo s on s.id=c.scID WHERE i.id IN (SELECT id FROM isoform WHERE category=='full-splice_match') AND c.scID IN (SELECT id FROM scInfo WHERE exp IN (%s))) GROUP BY gene,exp,celltype" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	# FSM_total.rename(columns={'SUM(read_count)':'Total'}, inplace=True)
+	# prop=df_FSM.merge(FSM_total, on=['exp','gene','celltype'])
+	# prop['Proportion']=prop['SUM(read_count)']/prop['Total']
+	# prop.celltype=pd.Categorical(prop.celltype, categories=['Ast', 'Ex', 'Inh', 'Mic', 'OPC', 'Oli', 'Per', 'End', 'NA'])
+	# prop=prop.sort_values("celltype")
+	iso=pd.read_sql("SELECT ends_id, read_count, scID FROM scCounts_ends", conn)
+	celltype=pd.read_sql("SELECT id AS scID, exp, celltype FROM scInfo WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	ENST=pd.read_sql("SELECT ends_id, tx, exp, gene FROM txID WHERE isoform_id IN (SELECT id FROM isoform WHERE category=='full-splice_match')", conn)
+
+	counts=iso.merge(celltype, on=['scID'])
+	FSM_counts=counts.merge(ENST, on=['ends_id'])
+	gene_totals=FSM_counts.groupby(['exp','celltype','gene'])['read_count'].sum().reset_index()
+	gene_totals.rename(columns={'read_count':'gene_total'}, inplace=True)
+	ENST_sum=FSM_counts.groupby(['exp','celltype','gene','tx'])['read_count'].sum().reset_index()
+	ENST_sum.merge(gene_totals, on=['exp', 'gene', 'celltype'])
+	ENST_sum['Proportion']=ENST_sum['read_count']/ENST_sum['gene_total']
+
 	for g in gene_list:
 		df_gene=prop[(prop["gene"]==g)]
 		fig = go.Figure()
