@@ -12,6 +12,7 @@ fig = go.Figure()
 pio.full_figure_for_development(fig,warn=False)
 import sys
 import timeit
+import subprocess
 
 def isoprop_plot(db, exp, outPrefix):
 	conn=sqlite3.connect(db)
@@ -78,6 +79,7 @@ def isoprop_plot(db, exp, outPrefix):
 	plotFile=outPrefix+"_isoReadsPropPlot.pdf"
 	fig.write_image(plotFile)
 	print("Isoform read proportions plot saved: " + plotFile)
+	conn.close()
 	return
 
 
@@ -102,6 +104,7 @@ def make_bed(db, exp, outPrefix, name):
 		with open(filename, "r+") as f: s=f.readlines(); s.insert(0, header), f.seek(0); f.writelines(s)
 		print("Bedfile saved: " + filename)
 		e+=1
+	conn.close()
 	return
 
 def gene_FSM(db, exp, outPrefix, genes, cutoff):
@@ -146,6 +149,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
+	conn.close()
 	return
 
 def IEJ_table(db, exp, outPrefix, variable=False):
@@ -170,6 +174,7 @@ def IEJ_table(db, exp, outPrefix, variable=False):
 		outFile=outPrefix+"_commonJxn_IEJs.txt"
 		df_IEJ_pivot.to_csv(outFile, sep='\t')
 		print("IEJ table saved: " + outFile)
+	conn.close()
 	return
 
 def expInfo(db, out):
@@ -180,6 +185,7 @@ def expInfo(db, out):
 	info_table = info_table.drop(['id'], axis=1)
 	info_table.to_csv(out, sep='\t', index=False, header=True)
 	print("Sample info table saved: " + out)
+	conn.close()
 	return
 
 def countMatrix(db, exp, outPrefix, gene=False, variable=False):
@@ -199,6 +205,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 		header="\t"+"\t".join(str(x) for x in pivot.columns.tolist()) + "\n"
 		with open (filename, "r+") as f: s=f.read(); f.seek(0); f.write(header+s)
 		print("Gene counts matrix saved: " + filename)
+		conn.close()
 		return
 	else:
 		if not variable:
@@ -211,6 +218,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 			header="\t"+"\t".join(str(x) for x in pivot.columns.tolist()) + "\n"
 			with open(filename, "r+") as f: s=f.read(); f.seek(0); f.write(header + s)
 			print("Common Junction counts matrix saved: " + filename)
+			conn.close()
 			return
 		else:
 			varEnds_counts = pd.read_sql("SELECT ends_id, exp, read_count FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
@@ -222,6 +230,7 @@ def countMatrix(db, exp, outPrefix, gene=False, variable=False):
 			header="\t"+"\t".join(str(x) for x in pivot.columns.tolist()) + "\n"
 			with open(filename, "r+") as f: s=f.read(); f.seek(0); f.write(header + s)
 			print("Variable ends counts matrix saved: " + filename)
+			conn.close()
 			return
 
 def tappASgff(db, exp, out):
@@ -258,6 +267,7 @@ def tappASgff(db, exp, out):
 				a=outFile.write(sjLine)
 				j+=1
 	print("tappAS-compatible gff3 generated: " + out)
+	conn.close()
 	return	
 
 def summaryTable(db, exp, outPrefix):
@@ -287,7 +297,43 @@ def summaryTable(db, exp, outPrefix):
 	pivot_endsFile=outPrefix+"_ends_allinfo_countMat.txt"
 	pivot_info_ends.to_csv(pivot_endsFile, sep='\t', index=False, header=True)
 	print("Variable ends isoform summary file saved: " + pivot_endsFile)
+	conn.close()
 	return
+
+def upset(db, exp, outPrefix, variable=False):
+	#makes upset plot to find overlapping isoforms in exp provided
+	conn=sqlite3.connect(db)
+	c=conn.cursor()
+	if not variable: #make commonJxn matrix and plot
+		commonJxn_counts = pd.read_sql("SELECT isoform_id, exp, read_count FROM counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+		commonJxn_counts['exp']='E'+commonJxn_counts['exp'].astype(str)
+		commonJxn_counts['read_count'].values[commonJxn_counts['read_count']>0]=1
+		pivot=commonJxn_counts.pivot(index="isoform_id", columns="exp", values="read_count")
+		pivot=pivot.fillna(0)
+		upsetMatrixFile=outPrefix+"_commonJxn_UpsetMatrix.txt"
+		pivot.to_csv(upsetMatrixFile, sep='\t', index=True, header=True)
+		scriptDir=os.getcwd()
+		upsetPlotFile=outPrefix+"_commonJxn_UpsetPlot.pdf"
+		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp))
+		subprocess.run(cmd, shell=True)
+		print("Common jxn UpSet plot saved: " + upsetPlotFile)
+		conn.close()
+		return
+	else:
+		varEnds_counts = pd.read_sql("SELECT ends_id, exp, read_count FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+		varEnds_counts['exp']='E'+varEnds_counts['exp'].astype(str)
+		varEnds_counts['read_count'].values[varEnds_counts['read_count']>0]=1
+		pivot = varEnds_counts.pivot(index="ends_id", columns="exp", values="read_count")
+		pivot=pivot.fillna(0)
+		upsetMatrixFile=outPrefix+"_varEnds_UpsetMatrix.txt"
+		pivot.to_csv(upsetMatrixFile, sep='\t', index=True, header=True)
+		scriptDir=os.getcwd()
+		upsetPlotFile=outPrefix+"_varEnds_UpsetPlot.pdf"
+		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp))
+		subprocess.run(cmd, shell=True)
+		print("Variable ends UpSet plot saved: " + upsetPlotFile)
+		conn.close()
+		return
 
 def main():
 	parser=argparse.ArgumentParser(description="built-in queries to generate plots/tables/visualization of exp/genes of interest")
@@ -329,6 +375,10 @@ def main():
 	summary_parser.add_argument('--db')
 	summary_parser.add_argument('--exp')
 	summary_parser.add_argument('--outPrefix')
+	upset_parser = subparsers.add_parser('upset')
+	upset_parser.add_argument('--db')
+	upset_parser.add_argument('--exp')
+	upset_parser.add_argument('--outPrefix')
 
 	args=parser.parse_args()
 	if args.subparser_name == "isoProp":
@@ -369,6 +419,11 @@ def main():
 	elif args.subparser_name=="summary":
 		start=timeit.default_timer()
 		summaryTable(args.db, args.exp, args.outPrefix)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="upset":
+		start=timeit.default_timer()
+		upset(args.db, args.exp, args.outPrefix)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	else:
