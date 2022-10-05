@@ -14,7 +14,7 @@ opt= parse_args(OptionParser(option_list=option_list))
 data=read.csv(opt$input, header=TRUE, sep='\t')
 num=opt$numSamples
 top=opt$top
-h=num/2
+h=as.integer(num)/2
 pdf(opt$outfile, useDingbats=FALSE, height=h, width=11)
 print(upset(data, order.by="freq", nsets=num, nintersects=top, empty.intersections="on", mainbar.y.label="Isoforms in Common", sets.x.label="Isoforms per Group"), newpage=FALSE)
 dev.off()
