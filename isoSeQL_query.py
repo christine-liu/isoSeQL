@@ -318,7 +318,7 @@ def upset(db, exp, outPrefix, top=10, variable=False):
 		pivot.to_csv(upsetMatrixFile, sep='\t', index=True, header=True)
 		scriptDir=os.path.abspath(os.path.dirname(__file__))
 		upsetPlotFile=outPrefix+"_commonJxn_UpsetPlot.pdf"
-		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp_list)) + " -t " + top
+		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp_list)) + " -t " + str(top)
 		run=subprocess.run(Rcmd, shell=True, check=True)
 		if run.returncode==0:
 			print("Common jxn UpSet plot saved: " + upsetPlotFile)
@@ -334,7 +334,7 @@ def upset(db, exp, outPrefix, top=10, variable=False):
 		pivot.to_csv(upsetMatrixFile, sep='\t', index=True, header=True)
 		scriptDir=os.path.abspath(os.path.dirname(__file__))
 		upsetPlotFile=outPrefix+"_varEnds_UpsetPlot.pdf"
-		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp_list)) + " -t " + top
+		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp_list)) + " -t " + str(top)
 		run=subprocess.run(Rcmd, shell=True, check=True)
 		if run.returncode==0:
 			print("Variable ends UpSet plot saved: " + upsetPlotFile)
