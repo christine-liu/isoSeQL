@@ -316,7 +316,7 @@ def upset(db, exp, outPrefix, variable=False):
 		pivot=pivot.fillna(0)
 		upsetMatrixFile=outPrefix+"_commonJxn_UpsetMatrix.txt"
 		pivot.to_csv(upsetMatrixFile, sep='\t', index=True, header=True)
-		scriptDir=os.path.realpath(__file__)
+		scriptDir=os.path.abspath(os.path.dirname(__file__))
 		upsetPlotFile=outPrefix+"_commonJxn_UpsetPlot.pdf"
 		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp))
 		subprocess.run(Rcmd, shell=True)
@@ -331,7 +331,7 @@ def upset(db, exp, outPrefix, variable=False):
 		pivot=pivot.fillna(0)
 		upsetMatrixFile=outPrefix+"_varEnds_UpsetMatrix.txt"
 		pivot.to_csv(upsetMatrixFile, sep='\t', index=True, header=True)
-		scriptDir=os.path.realpath(__file__)
+		scriptDir=os.path.abspath(os.path.dirname(__file__))
 		upsetPlotFile=outPrefix+"_varEnds_UpsetPlot.pdf"
 		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp))
 		subprocess.run(Rcmd, shell=True)
