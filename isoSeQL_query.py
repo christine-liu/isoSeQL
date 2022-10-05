@@ -304,6 +304,9 @@ def upset(db, exp, outPrefix, variable=False):
 	#makes upset plot to find overlapping isoforms in exp provided
 	conn=sqlite3.connect(db)
 	c=conn.cursor()
+	exp_file=open(exp, "r")
+	exp_list=exp_file.readlines()
+	exp_list=[i.rstrip() for i in exp_list]
 	if not variable: #make commonJxn matrix and plot
 		commonJxn_counts = pd.read_sql("SELECT isoform_id, exp, read_count FROM counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
 		commonJxn_counts['exp']='E'+commonJxn_counts['exp'].astype(str)
