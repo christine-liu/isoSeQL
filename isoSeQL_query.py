@@ -385,7 +385,7 @@ def main():
 	upset_parser.add_argument('--db')
 	upset_parser.add_argument('--exp')
 	upset_parser.add_argument('--outPrefix')
-	upset_parser.add_argument('--top')
+	upset_parser.add_argument('--top', default=10)
 	upset_parser.add_argument('--variable', action='store_true')
 
 	args=parser.parse_args()
