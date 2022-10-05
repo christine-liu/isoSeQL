@@ -301,7 +301,7 @@ def summaryTable(db, exp, outPrefix):
 	conn.close()
 	return
 
-def upset(db, exp, outPrefix, variable=False):
+def upset(db, exp, outPrefix, top=10, variable=False):
 	#makes upset plot to find overlapping isoforms in exp provided
 	conn=sqlite3.connect(db)
 	c=conn.cursor()
@@ -385,6 +385,8 @@ def main():
 	upset_parser.add_argument('--db')
 	upset_parser.add_argument('--exp')
 	upset_parser.add_argument('--outPrefix')
+	upset_parser.add_argument('--top')
+	upset_parser.add_argument('--variable', action='store_true')
 
 	args=parser.parse_args()
 	if args.subparser_name == "isoProp":
@@ -429,7 +431,7 @@ def main():
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name=="upset":
 		start=timeit.default_timer()
-		upset(args.db, args.exp, args.outPrefix)
+		upset(args.db, args.exp, args.outPrefix, args.top, args.variable)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	else:
