@@ -319,7 +319,7 @@ def upset(db, exp, outPrefix, variable=False):
 		scriptDir=os.getcwd()
 		upsetPlotFile=outPrefix+"_commonJxn_UpsetPlot.pdf"
 		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp))
-		subprocess.run(cmd, shell=True)
+		subprocess.run(Rcmd, shell=True)
 		print("Common jxn UpSet plot saved: " + upsetPlotFile)
 		conn.close()
 		return
@@ -334,7 +334,7 @@ def upset(db, exp, outPrefix, variable=False):
 		scriptDir=os.getcwd()
 		upsetPlotFile=outPrefix+"_varEnds_UpsetPlot.pdf"
 		Rcmd="Rscript " + scriptDir + "/isoSeQL_UpSet.R -i " + upsetMatrixFile + " -o " + upsetPlotFile + " -n " + str(len(exp))
-		subprocess.run(cmd, shell=True)
+		subprocess.run(Rcmd, shell=True)
 		print("Variable ends UpSet plot saved: " + upsetPlotFile)
 		conn.close()
 		return
