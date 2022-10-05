@@ -13,6 +13,7 @@ pio.full_figure_for_development(fig,warn=False)
 import sys
 import timeit
 import subprocess
+import os
 
 def isoprop_plot(db, exp, outPrefix):
 	conn=sqlite3.connect(db)
