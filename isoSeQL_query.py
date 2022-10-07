@@ -34,7 +34,8 @@ def isoprop_plot(db, exp, outPrefix):
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion of Isoforms"),
 		barmode="stack",
-		xaxis_type='category'
+		xaxis_type='category',
+		autosize=True,
 	)
 	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
