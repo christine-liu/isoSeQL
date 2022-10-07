@@ -128,7 +128,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 	for g in gene_list:
 		df_gene=ENST_sum[(ENST_sum["gene"]==g)]
 		if cutoff != None:
-			df_gene_plot=df_gene[(df_gene['gene_total']>cutoff)]
+			df_gene_plot=df_gene[(df_gene['gene_total']>int(cutoff))]
 			if df_gene_plot.empty:
 				print("No samples exceed cutoff for " +g+ ", please pick a different number")
 				continue;
@@ -401,7 +401,7 @@ def main():
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name == "FSM":
 		start=timeit.default_timer()
-		gene_FSM(args.db, args.exp, args.outPrefix, args.genes, int(args.cutoff))
+		gene_FSM(args.db, args.exp, args.outPrefix, args.genes, args.cutoff)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name == "IEJtab":
