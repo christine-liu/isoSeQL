@@ -147,8 +147,8 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			plot_df=df_gene_plot[df_gene_plot.tx==x]
 			fig.add_trace(go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=x))
 		total_labels=[{"x":x, "y":1.05, "text":total, "showarrow":False} for x, total in zip(plot_df.exp, plot_df.gene_total)]
+		fig.update_layout(annotations=total_labels)
 		fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
-		total_labels= [{"x":x, "y": 1.05, "text": str()}]
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
