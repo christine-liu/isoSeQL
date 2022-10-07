@@ -127,7 +127,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 	ENST_sum['Proportion']=ENST_sum['read_count']/ENST_sum['gene_total']
 	for g in gene_list:
 		df_gene=ENST_sum[(ENST_sum["gene"]==g)]
-		if cutoff:
+		if cutoff != None:
 			df_gene_plot=df_gene[(df_gene['gene_total']>cutoff)]
 			if df_gene_plot.empty:
 				print("No samples exceed cutoff for " +g+ ", please pick a different number")
