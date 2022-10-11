@@ -157,7 +157,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 		total_label_g=gene_totals[gene_totals['gene']==g]
 		total_label_g['exp']='E'+total_label_g['exp'].astype(str)
 		total_labels=[{"x":x, "y":1.05, "text":total, "showarrow":False} for x, total in zip(total_label_g.exp, total_label_g.gene_total)]
-		fig.update_layout(annotations=total_labels, legend_tracegroupgap=2)
+		fig.update_layout(annotations=total_labels, legend_tracegroupgap=50)
 		fig.update_xaxes(categoryorder='array', categoryarray=["E"+i for i in exp_list])
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
