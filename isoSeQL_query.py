@@ -149,8 +149,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			showlegend=True,
 			height=450,
 			width=40*len(exp_list)+140, 
-			legend=dict(font=dict(size=6), itemwidth=1000)
-		)
+			)
 		for x in df_gene_plot.tx.unique():
 			plot_df=df_gene_plot[df_gene_plot.tx==x]
 			fig.add_trace(go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=x))
