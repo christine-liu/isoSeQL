@@ -36,7 +36,7 @@ def isoprop_plot(db, exp, outPrefix):
 		barmode="stack",
 		xaxis_type='category',
 		height=450,
-		width=50*len(exp_list)+140
+		width=40*len(exp_list)+140
 	)
 	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
@@ -67,7 +67,7 @@ def isoprop_plot(db, exp, outPrefix):
 		barmode="stack",
 		xaxis_type='category',
 		height=450,
-		width=50*len(exp_list)+140
+		width=40*len(exp_list)+140
 	)
 	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
@@ -148,8 +148,8 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			xaxis_type='category',
 			showlegend=True,
 			height=450,
-			width=50*len(exp_list)+140, 
-			legend=dict(font=dict(size=10))
+			width=40*len(exp_list)+140, 
+			legend=dict(font=dict(size=6))
 		)
 		for x in df_gene_plot.tx.unique():
 			plot_df=df_gene_plot[df_gene_plot.tx==x]
