@@ -149,7 +149,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			showlegend=True,
 			height=450,
 			width=40*len(exp_list)+140,
-			legend={'tracegroupgap':3} 
+			legend={'tracegroupgap':0} 
 			)
 		for x in df_gene_plot.tx.unique():
 			plot_df=df_gene_plot[df_gene_plot.tx==x]
