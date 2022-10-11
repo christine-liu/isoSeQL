@@ -155,7 +155,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			fig.add_trace(go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=x))
 		total_label_g=gene_totals[gene_totals['gene']==g]
 		total_label_g['exp']='E'+total_label_g['exp'].astype(str)
-		total_labels=[{"x":x, "y":1.05, "text":total, "showarrow":False, "font_size":8, "textangle":135} for x, total in zip(total_label_g.exp, total_label_g.gene_total)]
+		total_labels=[{"x":x, "y":1.05, "text":total, "showarrow":False, "font_size":8, "textangle":-225} for x, total in zip(total_label_g.exp, total_label_g.gene_total)]
 		fig.update_layout(annotations=total_labels)
 		fig.update_xaxes(categoryorder='array', categoryarray=["E"+i for i in exp_list])
 		fileName=outPrefix+"_FSM_"+g+".pdf"
