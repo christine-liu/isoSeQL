@@ -149,7 +149,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			showlegend=True,
 			height=450,
 			width=40*len(exp_list)+140, 
-			legend=dict(font=dict(size=6), legend_tracegroupgap=2)
+			legend=dict(font=dict(size=6))
 		)
 		for x in df_gene_plot.tx.unique():
 			plot_df=df_gene_plot[df_gene_plot.tx==x]
@@ -157,7 +157,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 		total_label_g=gene_totals[gene_totals['gene']==g]
 		total_label_g['exp']='E'+total_label_g['exp'].astype(str)
 		total_labels=[{"x":x, "y":1.05, "text":total, "showarrow":False} for x, total in zip(total_label_g.exp, total_label_g.gene_total)]
-		fig.update_layout(annotations=total_labels)
+		fig.update_layout(annotations=total_labels, legend_tracegroupgap=2)
 		fig.update_xaxes(categoryorder='array', categoryarray=["E"+i for i in exp_list])
 		fileName=outPrefix+"_FSM_"+g+".pdf"
 		fig.write_image(fileName)
