@@ -147,9 +147,8 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			barmode="stack",
 			xaxis_type='category',
 			showlegend=True,
-			height=450,
-			width=40*len(exp_list)+140,
-			legend={'tracegroupgap':100} 
+			height=450+20*(len(df_gene_plot.tx.unique(),
+			width=40*len(exp_list)+140
 			)
 		for x in df_gene_plot.tx.unique():
 			plot_df=df_gene_plot[df_gene_plot.tx==x]
