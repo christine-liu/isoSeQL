@@ -36,6 +36,8 @@ def isoprop_plot(db, exp, outPrefix):
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion"),
 		barmode="stack",
+		height=450,
+		width=2000,
 	)
 	category2plot=prop.category.unique().tolist()
 	colors=[colorDict[i] for i in category2plot]
@@ -54,6 +56,8 @@ def isoprop_plot(db, exp, outPrefix):
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion"),
 		barmode="stack",
+		height=450,
+		width=2000,
 	)
 	for r, col in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
@@ -83,6 +87,8 @@ def isoprop_plot(db, exp, outPrefix):
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion"),
 		barmode="stack",
+		height=450,
+		width=2000,
 	)
 	category2plot=prop.category.unique().tolist()
 	colors=[colorDict[i] for i in category2plot]
@@ -101,6 +107,8 @@ def isoprop_plot(db, exp, outPrefix):
 		xaxis=dict(title_text="Exp"),
 		yaxis=dict(title_text="Proportion"),
 		barmode="stack",
+		height=450,
+		width=2000,
 	)
 	for r, col in zip(category2plot, colors):
 		plot_df = prop[prop.category == r]
