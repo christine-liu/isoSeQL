@@ -37,7 +37,7 @@ def isoprop_plot(db, exp, outPrefix):
 		barmode="stack",
 		xaxis_type='category',
 		height=450,
-		width=max(40*len(exp_list)+140,250)
+		width=max(40*len(exp_list)+140,450)
 	)
 	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
@@ -68,7 +68,7 @@ def isoprop_plot(db, exp, outPrefix):
 		barmode="stack",
 		xaxis_type='category',
 		height=450,
-		width=max(40*len(exp_list)+140,250)
+		width=max(40*len(exp_list)+140,450)
 	)
 	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
