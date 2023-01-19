@@ -8,6 +8,7 @@ import datetime
 import argparse
 import plotly.graph_objects as go
 import plotly.io as pio
+import plotly.express as px
 fig = go.Figure()
 pio.full_figure_for_development(fig,warn=False)
 import sys
@@ -36,7 +37,7 @@ def isoprop_plot(db, exp, outPrefix):
 		barmode="stack",
 		xaxis_type='category',
 		height=450,
-		width=40*len(exp_list)+140
+		width=max(40*len(exp_list)+140,250)
 	)
 	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
@@ -67,7 +68,7 @@ def isoprop_plot(db, exp, outPrefix):
 		barmode="stack",
 		xaxis_type='category',
 		height=450,
-		width=40*len(exp_list)+140
+		width=max(40*len(exp_list)+140,250)
 	)
 	fig.update_xaxes(categoryorder='array', categoryarray=[int(i) for i in exp_list])
 	category2plot=prop.category.unique().tolist()
@@ -140,6 +141,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			df_gene_plot=df_gene
 		df_gene_plot['exp']='E'+df_gene_plot['exp'].astype(str)
 		fig = go.Figure()
+		pio.templates["simple_white"]["layout"]["colorway"]=px.colors.qualitative.Dark24+px.colors.qualitative.Light24
 		fig.update_layout(
 			template="simple_white",
 			xaxis=dict(title_text="Exp"),
@@ -150,7 +152,9 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			height=450+10*len(df_gene_plot.tx.unique()) if len(df_gene_plot.tx.unique()) > 10 else 450,
 			width=40*len(exp_list)+140
 			)
-		for x in df_gene_plot.tx.unique():
+		txList=df_gene.tx.unique()
+		txList.sort()
+		for x in txList:
 			plot_df=df_gene_plot[df_gene_plot.tx==x]
 			fig.add_trace(go.Bar(x=plot_df.exp, y=plot_df.Proportion, name=x))
 		total_label_g=gene_totals[gene_totals['gene']==g]
