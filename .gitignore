@@ -14,3 +14,7 @@ testDB.py
 testSampleA_classification.txt
 testSampleA_genePred.txt
 countnotes.py
+isoSeQL_v1.py
+isoSeQL_v2.py
+genomeBrowser_info.docx
+queryNotes.py
