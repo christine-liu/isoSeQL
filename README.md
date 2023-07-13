@@ -19,7 +19,7 @@ R (v 4.1.1)
 
 R libraries optparse and UpSetR
 
-Python libraries sqlite3, numpy, pandas, argparse, plotly
+Python libraries numpy, pandas, plotly
 
 ## Terminology
 The isoSeQL SQLite database is made up of several different tables.
