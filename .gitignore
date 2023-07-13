@@ -1,4 +1,5 @@
 #ignore test files in this folder
+/__pycache__
 20210920_isoformcat_noEnds.pdf
 20210921_isoformcat_noEnds.pdf
 20210921_isoformcat_reads.pdf
