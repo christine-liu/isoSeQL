@@ -14,8 +14,11 @@ The isoSeQL manuscript is currently in preparation to be submitted. A bioRxiv ve
 isoSeQL was developed using python 3.9.6
 
 Dependencies:
+
 R (v 4.1.1)
+
 R libraries optparse and UpSetR
+
 Python libraries sqlite3, numpy, pandas, argparse, plotly
 
 ## Terminology
@@ -30,4 +33,4 @@ Two tables **exp** and **sampleData** keep track of metadata associated with eac
 See example/example.md for example commands that walk you through adding samples to a database and all the current built-in queries (as of July 2023) !
 
 ## On the way
-isoSeQL has been adapted to work with single-cell long-read data. It needs optimization, and a tutorial will follow when that is completed.
+isoSeQL has been adapted to work with single-cell long-read data (not part of publication). It needs optimization, and a tutorial will follow when that is completed.
