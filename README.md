@@ -4,7 +4,7 @@ Database tool for comparing across many Iso-Seq runs analyzed through SQANTI3
 SQANTI3: https://github.com/ConesaLab/SQANTI3
 
 ## Latest Updates
-isoSeQL v1.0.0 is now live!
+(July, 13, 2023) isoSeQL v1.0.0 is now live!
 
 
 ## How to cite isoSeQL
