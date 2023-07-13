@@ -21,6 +21,21 @@ R libraries optparse and UpSetR
 
 Python libraries numpy, pandas, plotly
 
+Using anaconda3
+```
+conda create --name isoSeQL python=3.9.6
+conda activate isoSeQL
+conda install -c conda-forge r-base=4.1.1
+conda install -c plotly plotly
+conda install -c anaconda pandas
+conda install -c anaconda numpy
+```
+In R, install optparse and UpSetR
+```
+install.packages("optparse")
+install.packages("UpSetR")
+```
+
 ## Terminology
 The isoSeQL SQLite database is made up of several different tables.
 
