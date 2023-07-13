@@ -21,10 +21,22 @@ python /path/to/isoSeQL/isoSeQL_run.py --classif /path/to/isoSeQL/example/exampl
 
 Now that all three samples have been added to the database, they can be queried to make various plots/tables!
 
-To see what is currently in the database:
-
+What is currently in the database?
+```
 python /path/to/isoSeQL/isoSeQL_query.py expInfo --db /path/to/output/example.db --out /path/to/output/example_expInfo.txt
+```
+will generate /path/to/output/example_expInfo.txt, a text file including all sample/experiment information that has been added to the database.
 
-will generate 
+For most queries, an "experiment list" is used as an input. This is a text file that lists the exp numbers to be queried, each on its own line. See examples /path/to/output/expList_all and /path/to/output/expList_1_3. Each of these lists can be used as queries to either include all 3 exps or only exps 1 and 3.
 
+What proportion of isoforms/reads belong to the various structural categories (FSM, ISM, NIC, etc)?
+
+```
+python /path/to/isoSeQL/isoSeQL_query.py isoProp --db /path/to/output/example.db --exp /path/to/output/expList_all --outPrefix /path/to/output/example
+```
+will generate 4 files:
+- /path/to/output/example_isoPropPlot.pdf and /path/to/output/example_isoPropTable.txt, a stacked bar chart showing the proportion of ***isoforms*** that belong to each structural category and corresponding table
+- /path/to/output/example_isoReadsPropPlot.pdf and /path/to/output/example_isoReadsPropPlot.txt, a stacked bar chart showing the proportion of ***reads*** that belong to each structural category and corresponding table
+
+The difference between these two plots is that one is not weighted by read count (isoform proportions) while the other is (read proportions)
 
