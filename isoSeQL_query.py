@@ -621,7 +621,7 @@ def main():
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name=="geneTx":
 		start=timeit.default_timer()
-		geneTx_count(args.db, args.exp, args.out)
+		geneTx_count(args.db, args.exp, args.outPrefix)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name=="FSM_count":
