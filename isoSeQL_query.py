@@ -150,7 +150,7 @@ def gene_FSM(db, exp, outPrefix, genes, cutoff):
 			xaxis_type='category',
 			showlegend=True,
 			height=450+10*len(df_gene_plot.tx.unique()) if len(df_gene_plot.tx.unique()) > 10 else 450,
-			width=40*len(exp_list)+140
+			width=max(40*len(exp_list)+140,450)
 			)
 		txList=df_gene.tx.unique()
 		txList.sort()
