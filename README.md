@@ -37,6 +37,10 @@ In R, install optparse and ComplexUpset
 install.packages("optparse")
 devtools::install_github("krassowski/complex-upset")
 ```
+I've included a yml file to help build the conda environment as well
+```
+conda env create -f isoSeQL.yml
+```
 
 ## Terminology
 _common junction isoforms_ - structure information stored in the **isoform** table, consolidates all isoforms with the same junctions, regardless of start and end coordinate, counts stored in **counts** table
