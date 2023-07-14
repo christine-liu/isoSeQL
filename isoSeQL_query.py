@@ -375,15 +375,14 @@ def varEnds(db, exp, outPrefix, isoList):
 	vEnds=ends_info.merge(endCounts, on=['ends_id'])
 	for iso in iso_list:
 		vEnds_iso=vEnds[vEnds["isoform_id"]==iso]
-		vEnds_iso=sampleInfo.merge(vEnds_iso, on=["exp"])
-		sampleSum=vEnds_iso.groupby(["exp_name", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
-		groupSum=sampleSum.groupby(["exp_name", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
-		groupSum_start=groupSum.groupby(['exp_name', 'start'])["read_count"].sum().reset_index()
-		groupStart_total=groupSum_start.groupby(['exp_name'])["read_count"].sum()
-		groupSum_start=groupSum_start.merge(groupStart_total, on="exp_name")
+		sampleSum=vEnds_iso.groupby(["exp", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
+		groupSum=sampleSum.groupby(["exp", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
+		groupSum_start=groupSum.groupby(['exp', 'start'])["read_count"].sum().reset_index()
+		groupStart_total=groupSum_start.groupby(['exp'])["read_count"].sum()
+		groupSum_start=groupSum_start.merge(groupStart_total, on="exp")
 		groupSum_start['proportion']=groupSum_start['read_count_x']/groupSum_start['read_count_y']
 		print(str(iso)+" coordinate spread: " + str(max(groupSum_start['start'])-min(groupSum_start['start'])))
-		fig=px.histogram(groupSum_start, x="start", y="proportion", color="exp_name", barmode="group", nbins=20, color_discrete_sequence=px.colors.qualitative.Dark24+px.colors.qualitative.Light24)
+		fig=px.histogram(groupSum_start, x="start", y="proportion", color="exp", barmode="group", nbins=20, color_discrete_sequence=px.colors.qualitative.Dark24+px.colors.qualitative.Light24)
 		fig.update_layout(
 			template="simple_white",
 			xaxis=dict(title_text="Start Coordinate"),
@@ -397,15 +396,14 @@ def varEnds(db, exp, outPrefix, isoList):
 		print("Variable starts plot saved: " + outFile)
 	for iso in iso_list:
 		vEnds_iso=vEnds[vEnds["isoform_id"]==iso]
-		vEnds_iso=sampleInfo.merge(vEnds_iso, on=["exp"])
-		sampleSum=vEnds_iso.groupby(["exp_name", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
-		groupSum=sampleSum.groupby(["exp_name", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
-		groupSum_end=groupSum.groupby(['exp_name', 'end'])["read_count"].sum().reset_index()
-		groupStart_total=groupSum_end.groupby(['exp_name'])["read_count"].sum()
+		sampleSum=vEnds_iso.groupby(["exp", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
+		groupSum=sampleSum.groupby(["exp", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
+		groupSum_end=groupSum.groupby(['exp', 'end'])["read_count"].sum().reset_index()
+		groupStart_total=groupSum_end.groupby(['exp'])["read_count"].sum()
 		groupSum_end=groupSum_end.merge(groupStart_total, on="exp_name")
 		groupSum_end['proportion']=groupSum_end['read_count_x']/groupSum_end['read_count_y']
 		print(str(iso)+" coordinate spread: " + str(max(groupSum_end['end'])-min(groupSum_end['end'])))
-		fig=px.histogram(groupSum_end, x="end", y="proportion", color="exp_name", barmode="group", nbins=20, color_discrete_sequence=px.colors.qualitative.Dark24+px.colors.qualitative.Light24)
+		fig=px.histogram(groupSum_end, x="end", y="proportion", color="exp", barmode="group", nbins=20, color_discrete_sequence=px.colors.qualitative.Dark24+px.colors.qualitative.Light24)
 		fig.update_layout(
 			template="simple_white",
 			xaxis=dict(title_text="End Coordinate"),
