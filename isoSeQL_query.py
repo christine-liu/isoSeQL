@@ -369,7 +369,7 @@ def varEnds(db, exp, outPrefix, isoList):
 	exp_list=[i.rstrip() for i in exp_list]
 	iso_file=open(isoList, 'r')
 	iso_list=iso_file.readlines()
-	iso_list=[i.rstrip() for i in iso_list]
+	iso_list=[int(i.rstrip()) for i in iso_list]
 	endCounts=pd.read_sql("SELECT ends_id, exp, read_count FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
 	ends_info = pd.read_sql("SELECT id AS ends_id, isoform_id, chr, start, end FROM isoform_ends", conn)
 	vEnds=ends_info.merge(endCounts, on=['ends_id'])
