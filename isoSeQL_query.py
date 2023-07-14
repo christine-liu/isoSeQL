@@ -456,23 +456,19 @@ def varEnd_count(db, exp, out):
 	conn.close()
 	return
 
-def geneTx_count(db, exp, outPrefix):
+def geneTx_count(db, exp, out):
 	#tables of #s of common junction isoforms or variable ends isoforms per gene
 	conn=sqlite3.connect(db)
 	c=conn.cursor()
 	exp_file=open(exp, "r")
 	exp_list=exp_file.readlines()
 	exp_list=[i.rstrip() for i in exp_list]
-	geneCommonJxn = pd.read_sql("SELECT gene, COUNT(id) FROM (SELECT DISTINCT gene, id FROM isoform WHERE id IN (SELECT id FROM counts WHERE exp IN (%s))) GROUP BY gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	geneCommonJxn=geneCommonJxn.sort_values(by=['COUNT(id)'], ascending=False)
-	commonJxnFile=outPrefix+"_commonJxn_txCount.txt"
-	geneCommonJxn.to_csv(commonJxnFile, sep='\t', index=False, header=True)
-	print("Common Jxn transcript count file saved: " + commonJxnFile)
-	geneVarEnd = pd.read_sql("SELECT gene, COUNT(id) FROM (SELECT DISTINCT i.gene, e.id FROM isoform_ends e INNER JOIN isoform i ON i.id = e.isoform_id WHERE e.id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))) GROUP BY gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
-	geneVarEnd=geneVarEnd.sort_values(by=['COUNT(id)'], ascending=False)
-	varEndFile=outPrefix+"_varEnds_txCount.txt"
-	geneVarEnd.to_csv(varEndFile, sep='\t', index=False, header=True)
-	print("Var end transcript count file saved: " + varEndFile)
+	geneCommonJxn = pd.read_sql("SELECT gene, COUNT(id) AS commonJxn FROM (SELECT DISTINCT gene, id FROM isoform WHERE id IN (SELECT id FROM counts WHERE exp IN (%s))) GROUP BY gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	geneVarEnd = pd.read_sql("SELECT gene, COUNT(id) AS varEnds FROM (SELECT DISTINCT i.gene, e.id FROM isoform_ends e INNER JOIN isoform i ON i.id = e.isoform_id WHERE e.id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))) GROUP BY gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	geneTxcount=geneCommonJxn.merge(geneVarEnd, on=['gene'])
+	geneTxcount=geneTxcount.sort_values(by=['commonJxn'], ascending=False)
+	geneTxcount.to_csv(out, sep='\t', index=False, header=True)
+	print("Tx per gene count file saved: " + out)
 	conn.close()
 	return
 
@@ -552,7 +548,7 @@ def main():
 	geneTx_parser = subparsers.add_parser('geneTx')
 	geneTx_parser.add_argument('--db')
 	geneTx_parser.add_argument('--exp')
-	geneTx_parser.add_argument('--outPrefix')
+	geneTx_parser.add_argument('--out')
 	FSMCount_parser = subparsers.add_parser('FSM_count')
 	FSMCount_parser.add_argument('--db')
 	FSMCount_parser.add_argument('--exp')
@@ -621,7 +617,7 @@ def main():
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name=="geneTx":
 		start=timeit.default_timer()
-		geneTx_count(args.db, args.exp, args.outPrefix)
+		geneTx_count(args.db, args.exp, args.out)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name=="FSM_count":
