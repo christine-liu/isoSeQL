@@ -345,7 +345,7 @@ def upset(db, exp, outPrefix, top=20, variable=False):
 		varEnds_counts = pd.read_sql("SELECT ends_id, exp, read_count FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
 		varEnds_counts['exp']='E'+varEnds_counts['exp'].astype(str)
 		varEnds_counts['read_count'].values[varEnds_counts['read_count']>0]=1
-		id_cat = pd.read_sql("SELECT e.ends_id, i.category FROM isoform i INNER JOIN isoform_ends e on e.isoform_id = i.id", conn)
+		id_cat = pd.read_sql("SELECT e.id AS ends_id, i.category FROM isoform i INNER JOIN isoform_ends e on e.isoform_id = i.id", conn)
 		varEnds_count=id_cat.merge(varEnds_counts, on='ends_id')
 		pivot = varEnds_counts.pivot(index="ends_id", columns="exp", values="read_count")
 		pivot=pivot.fillna(0)
