@@ -400,7 +400,7 @@ def varEnds(db, exp, outPrefix, isoList):
 		groupSum=sampleSum.groupby(["exp", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
 		groupSum_end=groupSum.groupby(['exp', 'end'])["read_count"].sum().reset_index()
 		groupStart_total=groupSum_end.groupby(['exp'])["read_count"].sum()
-		groupSum_end=groupSum_end.merge(groupStart_total, on="exp_name")
+		groupSum_end=groupSum_end.merge(groupStart_total, on="exp")
 		groupSum_end['proportion']=groupSum_end['read_count_x']/groupSum_end['read_count_y']
 		print(str(iso)+" coordinate spread: " + str(max(groupSum_end['end'])-min(groupSum_end['end'])))
 		fig=px.histogram(groupSum_end, x="end", y="proportion", color="exp", barmode="group", nbins=20, color_discrete_sequence=px.colors.qualitative.Dark24+px.colors.qualitative.Light24)
