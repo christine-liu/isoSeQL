@@ -346,7 +346,7 @@ def upset(db, exp, outPrefix, top=20, variable=False):
 		varEnds_counts['exp']='E'+varEnds_counts['exp'].astype(str)
 		varEnds_counts['read_count'].values[varEnds_counts['read_count']>0]=1
 		id_cat = pd.read_sql("SELECT e.id AS ends_id, i.category FROM isoform i INNER JOIN isoform_ends e on e.isoform_id = i.id", conn)
-		varEnds_count=id_cat.merge(varEnds_counts, on='ends_id')
+		varEnds_counts=id_cat.merge(varEnds_counts, on='ends_id')
 		pivot = varEnds_counts.pivot(index="ends_id", columns="exp", values="read_count")
 		pivot=pivot.fillna(0)
 		upsetMatrixFile=outPrefix+"_varEnds_UpsetMatrix.txt"
