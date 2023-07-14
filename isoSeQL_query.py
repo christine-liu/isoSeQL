@@ -327,7 +327,9 @@ def upset(db, exp, outPrefix, top=20, variable=False):
 		commonJxn_counts = pd.read_sql("SELECT isoform_id, exp, read_count FROM counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
 		commonJxn_counts['exp']='E'+commonJxn_counts['exp'].astype(str)
 		commonJxn_counts['read_count'].values[commonJxn_counts['read_count']>0]=1
-		pivot=commonJxn_counts.pivot(index="isoform_id", columns="exp", values="read_count")
+		id_cat = pd.read_sql("SELECT id AS isoform_id, category FROM isoform", conn)
+		commonJxn_counts=id_cat.merge(commonJxn_counts, on=['isoform_id'])
+		pivot=commonJxn_counts.pivot(index=["isoform_id", "category"], columns="exp", values="read_count")
 		pivot=pivot.fillna(0)
 		upsetMatrixFile=outPrefix+"_commonJxn_UpsetMatrix.txt"
 		pivot.to_csv(upsetMatrixFile, sep='\t', index=True, header=True)
@@ -343,6 +345,8 @@ def upset(db, exp, outPrefix, top=20, variable=False):
 		varEnds_counts = pd.read_sql("SELECT ends_id, exp, read_count FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
 		varEnds_counts['exp']='E'+varEnds_counts['exp'].astype(str)
 		varEnds_counts['read_count'].values[varEnds_counts['read_count']>0]=1
+		id_cat = pd.read_sql("SELECT e.ends_id, i.category FROM isoform i INNER JOIN isoform_ends e on e.isoform_id = i.id", conn)
+		varEnds_count=id_cat.merge(varEnds_counts, on='ends_id')
 		pivot = varEnds_counts.pivot(index="ends_id", columns="exp", values="read_count")
 		pivot=pivot.fillna(0)
 		upsetMatrixFile=outPrefix+"_varEnds_UpsetMatrix.txt"

@@ -17,7 +17,7 @@ Dependencies:
 
 R (v 4.1.1)
 
-R libraries optparse and UpSetR
+R libraries optparse and ComplexUpset
 
 Python libraries numpy, pandas, plotly
 
@@ -30,11 +30,8 @@ conda install -c plotly plotly
 conda install -c anaconda pandas
 conda install -c anaconda numpy
 conda install -c conda-forge python-kaleido
-```
-In R, install optparse and UpSetR
-```
-install.packages("optparse")
-install.packages("UpSetR")
+conda install -c conda-forge r-complexupset
+conda install -c bioconda r-optparse
 ```
 
 ## Terminology
