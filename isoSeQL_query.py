@@ -360,6 +360,136 @@ def upset(db, exp, outPrefix, top=20, variable=False):
 		conn.close()
 		return
 
+def varEnds(db, exp, outPrefix, isoList):
+	#makes two plots per isoform, binned to show spread of start/end coordinates and proportion of reads starting/ending at diff coordinates
+	conn=sqlite3.connect(db)
+	c=conn.cursor()
+	exp_file=open(exp, "r")
+	exp_list=exp_file.readlines()
+	exp_list=[i.rstrip() for i in exp_list]
+	iso_file=open(isoList, 'r')
+	iso_list=iso_file.readlines()
+	iso_list=[i.rstrip() for i in iso_list]
+	endCounts=pd.read_sql("SELECT ends_id, exp, read_count FROM ends_counts WHERE exp IN (%s)" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	ends_info = pd.read_sql("SELECT id AS ends_id, isoform_id, chr, start, end FROM isoform_ends", conn)
+	vEnds=ends_info.merge(endCounts, on=['ends_id'])
+	for iso in iso_list:
+		vEnds_iso=vEnds[vEnds["isoform_id"]==iso]
+		vEnds_iso=sampleInfo.merge(vEnds_iso, on=["exp"])
+		sampleSum=vEnds_iso.groupby(["exp_name", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
+		groupSum=sampleSum.groupby(["exp_name", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
+		groupSum_start=groupSum.groupby(['exp_name', 'start'])["read_count"].sum().reset_index()
+		groupStart_total=groupSum_start.groupby(['exp_name'])["read_count"].sum()
+		groupSum_start=groupSum_start.merge(groupStart_total, on="exp_name")
+		groupSum_start['proportion']=groupSum_start['read_count_x']/groupSum_start['read_count_y']
+		print(str(iso)+" coordinate spread: " + str(max(groupSum_start['start'])-min(groupSum_start['start'])))
+		fig=px.histogram(groupSum_start, x="start", y="proportion", color="exp_name", barmode="group", nbins=20, color_discrete_sequence=px.colors.qualitative.Dark24+px.colors.qualitative.Light24)
+		fig.update_layout(
+			template="simple_white",
+			xaxis=dict(title_text="Start Coordinate"),
+			yaxis=dict(title_text="Proportion of Reads"),
+			#xaxis_type='category'
+		)
+		pio.templates["simple_white"]["layout"]["colorway"]=px.colors.qualitative.Dark24+px.colors.qualitative.Light24
+		fig.update_xaxes(tickangle=90)
+		outFile=outPrefix+"_"+str(iso)+"_varEnds_Starts.pdf"
+		fig.write_image(outFile)
+		print("Variable starts plot saved: " + outFile)
+	for iso in iso_list:
+		vEnds_iso=vEnds[vEnds["isoform_id"]==iso]
+		vEnds_iso=sampleInfo.merge(vEnds_iso, on=["exp"])
+		sampleSum=vEnds_iso.groupby(["exp_name", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
+		groupSum=sampleSum.groupby(["exp_name", "ends_id", "isoform_id", "chr", "start", "end"])["read_count"].sum().reset_index()
+		groupSum_end=groupSum.groupby(['exp_name', 'end'])["read_count"].sum().reset_index()
+		groupStart_total=groupSum_end.groupby(['exp_name'])["read_count"].sum()
+		groupSum_end=groupSum_end.merge(groupStart_total, on="exp_name")
+		groupSum_end['proportion']=groupSum_end['read_count_x']/groupSum_end['read_count_y']
+		print(str(iso)+" coordinate spread: " + str(max(groupSum_end['end'])-min(groupSum_end['end'])))
+		fig=px.histogram(groupSum_end, x="end", y="proportion", color="exp_name", barmode="group", nbins=20, color_discrete_sequence=px.colors.qualitative.Dark24+px.colors.qualitative.Light24)
+		fig.update_layout(
+			template="simple_white",
+			xaxis=dict(title_text="End Coordinate"),
+			yaxis=dict(title_text="Proportion of Reads"),
+			#xaxis_type='category'
+		)
+		fig.update_xaxes(tickangle=90)
+		outFile=outPrefix+"_"+str(iso)+"_varEnds_Ends.pdf"
+		fig.write_image(outFile)
+		print("Variable ends plot saved: " + outFile)
+	conn.close()
+	return
+
+def genCounts(db, exp, out):
+	#makes table of reads/isoforms/genes per experiment
+	conn=sqlite3.connect(db)
+	c=conn.cursor()
+	exp_file=open(exp, "r")
+	exp_list=exp_file.readlines()
+	exp_list=[i.rstrip() for i in exp_list]
+	readsPer=pd.read_sql("SELECT exp, SUM(read_count) AS numReads FROM counts WHERE exp in (%s) GROUP BY exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	commonJxnIsoPer = pd.read_sql("SELECT c.exp, COUNT(i.id) AS numCommonJxnIsoforms FROM isoform i INNER JOIN counts c ON c.isoform_id = i.id WHERE exp in (%s) GROUP BY exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	novelCommonJxnIsoPer = pd.read_sql("SELECT c.exp, COUNT(i.id) AS numNovelCommonJxnIsoforms FROM isoform i INNER JOIN counts c ON c.isoform_id = i.id WHERE exp in (%s) AND (i.category=='novel_in_catalog' OR i.category=='novel_not_in_catalog')GROUP BY exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	varEndIsoPer = pd.read_sql("SELECT c.exp, COUNT(i.id) AS numVarEndIsoforms FROM isoform_ends i INNER JOIN ends_counts c ON c.ends_id = i.id WHERE exp in (%s) GROUP BY exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	novelVarEndIsoPer = pd.read_sql("SELECT c.exp, COUNT(i.id) AS numNovelVarEndIsoforms FROM isoform_ends i INNER JOIN ends_counts c ON c.ends_id = i.id INNER JOIN isoform x ON i.isoform_id = x.id AND (x.category=='novel_in_catalog' OR x.category=='novel_not_in_catalog') WHERE exp in (%s) GROUP BY exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	genesPer=pd.read_sql("SELECT exp, COUNT(gene) AS numGenes FROM (SELECT DISTINCT c.exp, i.gene FROM isoform i INNER JOIN counts c ON c.isoform_id = i.id WHERE exp in (%s)) GROUP BY exp" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	countsTable = genesPer.merge(varEndIsoPer, on="exp")
+	countsTable = countsTable.merge(novelVarEndIsoPer, on="exp")
+	countsTable = countsTable.merge(commonJxnIsoPer, on="exp")
+	countsTable = countsTable.merge(novelCommonJxnIsoPer, on="exp")
+	countsTable = countsTable.merge(readsPer, on="exp")
+	countsTable.to_csv(out, sep='\t', index=False, header=True)
+	print("General counts table saved: " + out)
+	conn.close()
+	return
+
+def varEnd_count(db, exp, out):
+	#prints table of common junction isoform IDs and how many variable ends isoforms are associated with each
+	conn=sqlite3.connect(db)
+	c=conn.cursor()
+	exp_file=open(exp, "r")
+	exp_list=exp_file.readlines()
+	exp_list=[i.rstrip() for i in exp_list]
+	isoVar = pd.read_sql("SELECT isoform_id, COUNT(ends_id) FROM (SELECT DISTINCT isoform_id, id AS ends_id FROM isoform_ends WHERE id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))) GROUP BY isoform_id" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	isoVar=isoVar.sort_values(by=['COUNT(ends_id)'], ascending=False)
+	isoVar.to_csv(out, sep='\t', index=False, header=True)
+	print("Number of variable ends isoforms per common jxn isoform file saved: " + out)
+	conn.close()
+	return
+
+def geneTx_count(db, exp, outPrefix):
+	#tables of #s of common junction isoforms or variable ends isoforms per gene
+	conn=sqlite3.connect(db)
+	c=conn.cursor()
+	exp_file=open(exp, "r")
+	exp_list=exp_file.readlines()
+	exp_list=[i.rstrip() for i in exp_list]
+	geneCommonJxn = pd.read_sql("SELECT gene, COUNT(id) FROM (SELECT DISTINCT gene, id FROM isoform WHERE id IN (SELECT id FROM counts WHERE exp IN (%s))) GROUP BY gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	geneCommonJxn=geneCommonJxn.sort_values(by=['COUNT(id)'], ascending=False)
+	commonJxnFile=outPrefix+"_commonJxn_txCount.txt"
+	geneCommonJxn.to_csv(commonJxnFile, sep='\t', index=False, header=True)
+	print("Common Jxn transcript count file saved: " + commonJxnFile)
+	geneVarEnd = pd.read_sql("SELECT gene, COUNT(id) FROM (SELECT DISTINCT i.gene, e.id FROM isoform_ends e INNER JOIN isoform i ON i.id = e.isoform_id WHERE e.id IN (SELECT ends_id FROM ends_counts WHERE exp IN (%s))) GROUP BY gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	geneVarEnd=geneVarEnd.sort_values(by=['COUNT(id)'], ascending=False)
+	varEndFile=outPrefix+"_varEnds_txCount.txt"
+	geneVarEnd.to_csv(varEndFile, sep='\t', index=False, header=True)
+	print("Var end transcript count file saved: " + varEndFile)
+	conn.close()
+	return
+
+def FSM_count(db, exp, out):
+	#makes list of genes and number of FSM isoforms detected for each
+	conn=sqlite3.connect(db)
+	c=conn.cursor()
+	exp_file=open(exp, "r")
+	exp_list=exp_file.readlines()
+	exp_list=[i.rstrip() for i in exp_list]
+	geneCommonJxn = pd.read_sql("SELECT gene, COUNT(id) FROM (SELECT DISTINCT gene, id FROM isoform WHERE category=='full-splice_match' AND id IN (SELECT id FROM counts WHERE exp IN (%s))) GROUP BY gene" % ','.join('?' for i in exp_list), conn, params=exp_list)
+	geneCommonJxn.to_csv(out, sep='\t', index=False, header=True)
+	print("FSM count per gene file saved: " + out)
+	conn.close()
+	return
+
+
 def main():
 	parser=argparse.ArgumentParser(description="built-in queries to generate plots/tables/visualization of exp/genes of interest")
 	subparsers = parser.add_subparsers(dest="subparser_name")
@@ -406,6 +536,27 @@ def main():
 	upset_parser.add_argument('--outPrefix')
 	upset_parser.add_argument('--top', default=20)
 	upset_parser.add_argument('--variable', action='store_true')
+	varEnds_parser = subparsers.add_parser('varEnds')
+	varEnds_parser.add_argument('--db')
+	varEnds_parser.add_argument('--exp')
+	varEnds_parser.add_argument('--outPrefix')
+	varEnds_parser.add_argument('--isoList')
+	genCounts_parser = subparsers.add_parser('genCounts')
+	genCounts_parser.add_argument('--db')
+	genCounts_parser.add_argument('--exp')
+	genCounts_parser.add_argument('--out')
+	varEndCount_parser = subparsers.add_parser('varEnds_count')
+	varEndCount_parser.add_argument('--db')
+	varEndCount_parser.add_argument('--exp')
+	varEndCount_parser.add_argument('--out')
+	geneTx_parser = subparsers.add_parser('geneTx')
+	geneTx_parser.add_argument('--db')
+	geneTx_parser.add_argument('--exp')
+	geneTx_parser.add_argument('--outPrefix')
+	FSMCount_parser = subparsers.add_parser('FSM_count')
+	FSMCount_parser.add_argument('--db')
+	FSMCount_parser.add_argument('--exp')
+	FSMCount_parser.add_argument('--out')
 
 	args=parser.parse_args()
 	if args.subparser_name == "isoProp":
@@ -451,6 +602,31 @@ def main():
 	elif args.subparser_name=="upset":
 		start=timeit.default_timer()
 		upset(args.db, args.exp, args.outPrefix, args.top, args.variable)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="varEnds":
+		start=timeit.default_timer()
+		varEnds(args.db, args.exp, args.outPrefix, args.isoList)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="genCounts":
+		start=timeit.default_timer()
+		genCounts(args.db, args.exp, args.out)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="varEnds_count":
+		start=timeit.default_timer()
+		varEnd_count(args.db, args.exp, args.out)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="geneTx":
+		start=timeit.default_timer()
+		geneTx_count(args.db, args.exp, args.out)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="FSM_count":
+		start=timeit.default_timer()
+		FSM_count(args.db, args.exp, args.out)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	else:
