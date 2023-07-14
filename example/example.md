@@ -80,6 +80,8 @@ output file options:
 - --variable, /path/to/output/example_commonJxn_UpsetMatrix.txt and /path/to/output/example_varEnds_UpsetPlot.pdf, binary counts matrix used to create UpSet plot and resulting plot
 - no flag, /path/to/output/example_varEnds_UpsetMatrix.txt and /path/to/output/example_commonJxn_UpsetPlot.pdf, binary counts matrix used to create UpSet plot and resulting plot
 
+Bars are colored by structural categories of isoforms
+
 ### What does the relative expression of different known isoforms for a particular gene look like? (help display isoform switching)
 First make a list of genes that you are interested in, each on their own line. /path/to/output/geneList
 ```
