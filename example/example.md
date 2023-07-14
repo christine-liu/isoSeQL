@@ -28,6 +28,12 @@ will generate /path/to/output/example_expInfo.txt, a text file including all sam
 
 For most queries, an "experiment list" is used as an input. This is a text file that lists the exp numbers to be queried, each on its own line. See examples /path/to/output/expList_all and /path/to/output/expList_1_3. Each of these lists can be used as queries to either include all 3 exps or only exps 1 and 3.
 
+### How many reads/isoforms/genes were detected in each of my samples?
+```
+python /path/to/isoSeQL/isoSeQL_query.py geneCounts --db /path/to/output/example.db --exp /path/to/output/expList_all --out /path/to/output/example_genCounts.txt
+```
+outputs a table with the number of genes, variable end and common junction isoforms, how many were annotated as "novel" isoforms, and how many reads were detected in each exp.
+
 ### Which isoforms are present in my samples?
 ```
 python /path/to/isoSeQL/isoSeQL_query.py summary --db /path/to/output/example.db --exp /path/to/output/expList_all --outPrefix /path/to/output/example
@@ -36,6 +42,12 @@ will generate two files:
 - /path/to/output/example_commonJxn_allinfo_countMat.txt
 - /path/to/output/example_ends_allinfo_countMat.txt
 that keep track of isoform information (gene, category, subcategory, IEJ status) and corresponding counts for each exp. The difference between the two files is whether or not common junction isoforms (ends ignored) or isoforms with variable end coordinates are being examined.
+
+### How many isoforms were detected per gene?
+```
+python /path/to/isoSeQL/isoSeQL_query.py geneTx --db /path/to/output/example.db --exp /path/to/output/expList_all --out /path/to/output/example_geneTx_count.txt
+```
+outputs a table with the number of common junction isoforms and variable ends isoforms per gene, sorted by # of common junction isoforms (highest to lowest)
 
 ### What proportion of isoforms/reads belong to the various structural categories (FSM, ISM, NIC, etc)?
 ```
@@ -84,12 +96,29 @@ Bars are colored by structural categories of isoforms
 
 ### What does the relative expression of different known isoforms for a particular gene look like? (help display isoform switching)
 First make a list of genes that you are interested in, each on their own line. /path/to/output/geneList
+If you aren't sure which genes might be interesting, you can generate a table that shows how many FSM isoforms there are per gene
+```
+python /path/to/isoSeQL/isoSeQL_query.py FSM_count --db /path/to/output/example.db --exp /path/to/output/expList_all --out /path/to/output/example_FSM_count.txt
+```
+outputs a list of genes and the number of common junction FSM isoforms that were detected
+Once you have a gene list, run
 ```
 python /path/to/isoSeQL/isoSeQL_query.py FSM --db /path/to/output/example.db --exp /path/to/output/expList_all --outPrefix /path/to/output/example --genes /path/to/output/geneList [--cutoff x]
 ```
 if use --cutoff x, then the ***total*** number of reads for that gene needs to exceed x in order to plot. If not, an error message will inform you that "No samples exceed cutoff for \[gene\], please pick a different number" and no plot will be made.
 if no cutoff is used, then data will be plotted regardless of read count.
 For each gene in the geneList, a stacked bar plot indicating the proportion of reads from each known isoform for each exp will be generated. Numbers on the top of the bars will indicate total read count for that exp. /path/to/output/example_FSM_\[gene\].pdf
+
+### For a particular isoform (or isoforms) or interest, what does the distribution of end coordinates look like? (help indicate different start/end sites)
+Start by generating a table of common junction isoforms and the number of variable ends isoforms associated with each. (How many different combinations of start/end coordinates exist for each common junction isoform?)
+```
+python /path/to/isoSeQL/isoSeQL_query.py varEnds_count --db /path/to/output/example.db --exp /path/to/output/expList_all --out /path/to/output/example_varEnds_counts.txt
+```
+outputs each common junction isoform ID and the number of variable ends isoforms associated with it. 
+Make a list of isoforms of interest, each isoform ID on its own line /path/to/output/isoList
+```
+python /path/to/isoSeQL/isoSeQL_query.py varEnds --db /path/to/output/example.db --exp /path/to/output/expList_all --outPrefix /path/to/output/example --isoList /path/to/output/isoList
+```
 
 ### What if none of these queries address what I'm looking for?
 Lucky for you, your database can be loaded into python and you can write your own custom queries!

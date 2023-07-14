@@ -41,7 +41,7 @@ devtools::install_github("krassowski/complex-upset")
 ## Terminology
 _common junction isoforms_ - structure information stored in the **isoform** table, consolidates all isoforms with the same junctions, regardless of start and end coordinate, counts stored in **counts** table
 
-_isoforms with variable ends_ - structure information linked to common junction isoform in **isoform** table, start/end coordinates stored in **isoform_ends** table, counts stored in **ends_counts** table
+_variable ends isoforms/isoforms with variable ends_ - structure information linked to common junction isoform in **isoform** table, start/end coordinates stored in **isoform_ends** table, counts stored in **ends_counts** table
 
 _experiment (exp)_ vs _sample_ - I wanted to be able to link together two different experiments (run at different times or together) that used the same sample material. **sampleData** stores all the information about the cell line, tissue, etc being used as source material. **exp** tracks the software versions, reference versions, and when the experiment was performed. Currently queries can be performed to examine isoforms by _exp_ ID (integers). Future implementations will include the ability to group exp IDs together if they come from the same sample or same sample group.
 

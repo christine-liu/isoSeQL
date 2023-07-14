@@ -1,0 +1,4 @@
+exp	numGenes	numVarEndIsoforms	numNovelVarEndIsoforms	numCommonJxnIsoforms	numNovelCommonJxnIsoforms	numReads
+1	10732	53064	21547	39747	19253	1712702
+2	10946	61818	28281	46743	25261	1923990
+3	10573	59077	27138	44134	24030	1920346
