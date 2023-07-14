@@ -119,6 +119,7 @@ Make a list of isoforms of interest, each isoform ID on its own line /path/to/ou
 ```
 python /path/to/isoSeQL/isoSeQL_query.py varEnds --db /path/to/output/example.db --exp /path/to/output/expList_all --outPrefix /path/to/output/example --isoList /path/to/output/isoList
 ```
+For this example, I used isoforms 22567, 28729. The resulting plots show the proportion of reads where the start/end coordinates lie in a particular bin across the x-axis. 
 
 ### What if none of these queries address what I'm looking for?
 Lucky for you, your database can be loaded into python and you can write your own custom queries!
