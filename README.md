@@ -29,6 +29,7 @@ conda install -c conda-forge r-base=4.1.1
 conda install -c plotly plotly
 conda install -c anaconda pandas
 conda install -c anaconda numpy
+conda install -c conda-forge python-kaleido
 ```
 In R, install optparse and UpSetR
 ```
@@ -37,12 +38,11 @@ install.packages("UpSetR")
 ```
 
 ## Terminology
-The isoSeQL SQLite database is made up of several different tables.
+_common junction isoforms_ - structure information stored in the **isoform** table, consolidates all isoforms with the same junctions, regardless of start and end coordinate, counts stored in **counts** table
 
-In order to unify isoforms IDs across different samples and deal with the challenge of isoforms having variable start and end coordinates due to fragmentation or other factors, isoform structural information is split between two tables **isoform** and **isoform_ends**. **isoform** keeps track of the chromosome, strand, junctions (encoded as a string '(a,b),(c,d),(e,f)'), gene, number of exons, structural category (FSM,ISM,NIC,etc), subcategory (if applicable), canonical (T/F for use of canonical splice sites), IEJ (T/F for containing 1+ IEJ). These isoforms are referred to as "common junction isoforms" b/c it collapses together isoforms that have the exact same junctions but different start and/or end coordinates and treats them as a single isoform. **isoform_ends** is linked to the corresponding common junction isoform in **isoform** but additionally keeps track of the start and end coordinates, exon sizes, and exon starts. These isoforms are referred to as "isoforms with variable ends". From these two tables alone, it's possible to generate a file (like a gff) with all the structural information for each isoform.
+_isoforms with variable ends_ - structure information linked to common junction isoform in **isoform** table, start/end coordinates stored in **isoform_ends** table, counts stored in **ends_counts** table
 
-Two tables **exp** and **sampleData** keep track of metadata associated with each addition to the database. The logic behind keeping track of experiments (exp) separate from samples is that certain tissue samples, cells, etc may be used for multiple runs. For example, if I use a piece of brain tissue for an experiment and then re-use it a year later, I want to be able to link those two experiments together for comparison b/c I used the same tissue sample. I still want to be able to treat the two sequencing runs separately though, and if they were run at different times, it's important to keep track of any software or reference versions that were used for the analysis of each run. The **sampleData** table keeps track of the sample name, tissue, disease status, age, and sex. Its linked to various entries in the **exp** table which additionally keeps track of RIN (RNA Integrity Number, measures quality/fragmented-ness of RNA sample, correlates with sequencing quality metrics), date of experiment, platform (ONT, PacBio Sequel I/II/IIe/Revio), method (bulk, single-cell), mapping software version, reference genome, reference annotation, lima version (demux software), ccs version (circular consensus sequencing software), isoseq3 version, cupcake version (previously used for collapsing isoforms, but now isoseq3 can be used for collapsing), SQANTI version, experiment name. Currently queries can be performed to examine isoforms by _exp_ ID (integers). Future implementations will include the ability to group exp IDs together if they come from the same sample or same sample group.
-
+_experiment (exp)_ vs _sample_ - I wanted to be able to link together two different experiments (run at different times or together) that used the same sample material. **sampleData** stores all the information about the cell line, tissue, etc being used as source material. **exp** tracks the software versions, reference versions, and when the experiment was performed. Currently queries can be performed to examine isoforms by _exp_ ID (integers). Future implementations will include the ability to group exp IDs together if they come from the same sample or same sample group.
 
 ## How to use isoSeQL
 See example/example.md for example commands that walk you through adding samples to a database and all the current built-in queries (as of July 2023) !

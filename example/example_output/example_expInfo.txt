@@ -1,0 +1,4 @@
+exp_id	sample_id	RIN	seq_date	platform	method	vMap	vReference	vAnnot	vLima	vCCS	vIsoseq3	vCupcake	vSQANTI	exp_name	sample_name	tissue	disease	age	sex
+1	1	N/A	06/30/2021	PB_SequelII	bulk	v.2.17-r941	hg38	gencodeV39	v.2.4.0	v.6.0.0	v3.7.0	v28.0.0	v4.1_CL2	NA18989	NA18989	1000G_cell	Control	N/A	M
+2	2	N/A	06/30/2021	PB_SequelII	bulk	v.2.17-r941	hg38	gencodeV39	v.2.4.0	v.6.0.0	v3.7.0	v28.0.0	v4.1_CL2	NA19317	NA19317	1000G_cell	Control	N/A	M
+3	3	N/A	06/30/2021	PB_SequelII	bulk	v.2.17-r941	hg38	gencodeV39	v.2.4.0	v.6.0.0	v3.7.0	v28.0.0	v4.1_CL2	NA19331	NA19331	1000G_cell	Control	N/A	M
