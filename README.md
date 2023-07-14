@@ -30,8 +30,12 @@ conda install -c plotly plotly
 conda install -c anaconda pandas
 conda install -c anaconda numpy
 conda install -c conda-forge python-kaleido
-conda install -c conda-forge r-complexupset
-conda install -c bioconda r-optparse
+conda install -c conda-forge r-devtools
+```
+In R, install optparse and ComplexUpset
+```
+install.packages("optparse")
+devtools::install_github("krassowski/complex-upset")
 ```
 
 ## Terminology
