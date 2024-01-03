@@ -238,6 +238,37 @@ def IEJ_table(db, exp, outPrefix, variable=False):
 		print("IEJ table saved: " + outFile)
 	return
 
+def scSummaryTable(db, exp, outPrefix):
+	conn=sqlite3.connect(db)
+	c=conn.cursor()
+	exp_file=open(exp, "r")
+	exp_list=exp_file.readlines()
+	exp_list=[i.rstrip() for i in exp_list]
+	isoformInfo =pd.read_sql("SELECT id AS isoform_id, gene, category, subcategory, IEJ FROM isoform", conn)
+	counts_byScID=pd.read_sql("SELECT * FROM scCounts", conn)
+	cellInfo=pd.read_sql("SELECT id AS scID, exp, celltype FROM scInfo", conn)
+	counts_byScID=counts_byScID.merge(cellInfo, on=['scID'])
+	#cell counts
+	isoform_cellCount_type=counts_byScID.groupby(['isoform_id','exp','celltype'])['scID'].count().reset_index()
+	isoform_cellCount_type.rename(columns={'scID':'num_cells'}, inplace=True)
+	isoform_cellCount_type['exp_celltype']=isoform_cellCount_type['exp'].astype(str)+"_"+isoform_cellCount_type['celltype'].astype(str)
+	cellCountsInfo_pivot = isoform_cellCount_type.pivot(index="isoform_id", columns='exp_celltype', values='num_cells')
+	cellCountsInfo_pivot=cellCountsInfo_pivot.fillna(0)
+	cellCountsInfo_pivot = isoformInfo.merge(cellCountsInfo_pivot, on=['isoform_id'])
+	countsFile=outPrefix+"_commonJxn_allinfo_cellCount.txt"
+	cellCountsInfo_pivot.to_csv(countsFile, sep='\t', index=False, header=True)
+	print("Cell counts file saved: " + countsFile)
+	#read counts
+	isoform_readCount_type=counts_byScID.groupby(['isoform_id', 'exp', 'celltype'])['read_count'].sum().reset_index()
+	isoform_readCount_type['exp_celltype']=isoform_readCount_type['exp'].astype(str)+"_"+isoform_readCount_type['celltype'].astype(str)
+	readCountsInfo_pivot = isoform_readCount_type.pivot(index='isoform_id', columns='exp_celltype', values='read_count')
+	readCountsInfo_pivot=readCountsInfo_pivot.fillna(0)
+	readCountsInfo_pivot = isoformInfo.merge(readCountsInfo_pivot, on=['isoform_id'])
+	readsFile=outPrefix+"_commonJxn_allinfo_celltype_countMat.txt"
+	readCountsInfo_pivot.to_csv(readsFile, sep='\t', index=False, header=True)
+	print("Read counts by cell type file saved: " + readsFile)
+	return
+
 def main():
 	parser=argparse.ArgumentParser(description="built-in queries to generate plots/tables/visualization of exp/genes of interest")
 	subparsers = parser.add_subparsers(dest="subparser_name")
@@ -261,6 +292,10 @@ def main():
 	IEJ_parser.add_argument('--exp')
 	IEJ_parser.add_argument('--outPrefix')
 	IEJ_parser.add_argument('--variable', action='store_true')
+	summary_parser = subparsers.add_parser('SCsummary')
+	summary_parser.add_argument('--db')
+	summary_parser.add_argument('--exp')
+	summary_parser.add_argument('--outPrefix')
 	
 	args=parser.parse_args()
 	if args.subparser_name == "SCisoProp":
@@ -281,6 +316,11 @@ def main():
 	elif args.subparser_name=="SCIEJ":
 		start=timeit.default_timer()
 		IEJ_table(args.db, args.exp, args.outPrefix, args.variable)
+		stop=timeit.default_timer()
+		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
+	elif args.subparser_name=="SCsummary":
+		start=timeit.default_timer()
+		scSummaryTable(args.db, args.exp, args.outPrefx)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	else:
