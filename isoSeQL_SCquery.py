@@ -148,7 +148,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 	gene_totals=FSM_counts.groupby(['exp','celltype','gene'])['read_count'].sum().reset_index()
 	gene_totals.rename(columns={'read_count':'gene_total'}, inplace=True)
 	ENST_sum=FSM_counts.groupby(['exp','celltype','gene','tx'])['read_count'].sum().reset_index()
-	ENST_sum.merge(gene_totals, on=['exp', 'gene', 'celltype'])
+	ENST_sum=ENST_sum.merge(gene_totals, on=['exp', 'gene', 'celltype'])
 	ENST_sum['Proportion']=ENST_sum['read_count']/ENST_sum['gene_total']
 
 	for g in gene_list:
