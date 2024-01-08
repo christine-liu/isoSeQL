@@ -152,7 +152,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 	ENST_sum['Proportion']=ENST_sum['read_count']/ENST_sum['gene_total']
 
 	for g in gene_list:
-		df_gene=prop[(prop["gene"]==g)]
+		df_gene=ENST_sum[(ENST_sum["gene"]==g)]
 		fig = go.Figure()
 		pio.full_figure_for_development(fig,warn=False)
 		fig.update_layout(
