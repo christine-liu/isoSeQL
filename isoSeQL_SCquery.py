@@ -144,7 +144,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 	ENST=pd.read_sql("SELECT ends_id, tx, exp, gene FROM txID WHERE isoform_id IN (SELECT id FROM isoform WHERE category=='full-splice_match')", conn)
 
 	counts=iso.merge(celltype, on=['scID'])
-	FSM_counts=counts.merge(ENST, on=['ends_id'])
+	FSM_counts=counts.merge(ENST, on=['ends_id', 'exp'])
 	gene_totals=FSM_counts.groupby(['exp','celltype','gene'])['read_count'].sum().reset_index()
 	gene_totals.rename(columns={'read_count':'gene_total'}, inplace=True)
 	ENST_sum=FSM_counts.groupby(['exp','celltype','gene','tx'])['read_count'].sum().reset_index()
