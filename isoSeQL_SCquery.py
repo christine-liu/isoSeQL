@@ -320,7 +320,7 @@ def main():
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	elif args.subparser_name=="SCsummary":
 		start=timeit.default_timer()
-		scSummaryTable(args.db, args.exp, args.outPrefx)
+		scSummaryTable(args.db, args.exp, args.outPrefix)
 		stop=timeit.default_timer()
 		print("Complete in {0} sec.".format(stop-start), file=sys.stderr)
 	else:
