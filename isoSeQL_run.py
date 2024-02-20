@@ -16,7 +16,7 @@ def main():
 	parser.add_argument("--expConfig", help="path to exp config file")
 	parser.add_argument("--db", help="path to database")
 	parser.add_argument("--sc", default=None, help='path to annotated csv')
-    parser.add_argument("--gff", default=None, help='path to gff from pigeon'))
+    parser.add_argument("--gff", default=None, help='path to gff from pigeon')
 	pkgDir=os.path.dirname(os.path.realpath(__file__))
 	GTF2GENEPRED=os.path.join(pkgDir, "gtfToGenePred")
     GFFREAD="gffread"
