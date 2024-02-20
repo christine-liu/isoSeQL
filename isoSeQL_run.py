@@ -16,7 +16,7 @@ def main():
 	parser.add_argument("--expConfig", help="path to exp config file")
 	parser.add_argument("--db", help="path to database")
 	parser.add_argument("--sc", default=None, help='path to annotated csv')
-        print(os.path.realpath(__file__))
+	print(os.path.realpath(__file__))
 	args=parser.parse_args()
 	#check for file existence
 	errorMsg=""
