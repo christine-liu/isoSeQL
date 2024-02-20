@@ -37,7 +37,7 @@ def main():
 				gtfFile=os.path.dirname(os.path.realpath(args.db)) + args.gff + ".gtf"
 				subprocess.call([GFFREAD, args.gff, '-T', '-o', gtfFile])
 				genePredFile_fromGff=os.path.dirname(os.path.realpath(args.db)) + args.gff + ".genePred"
-				subprocess.call([GTF2GENEPRED, gtfFile, genePred, "-genePredExt", "-allErrors", "-ignoreGroupsWithoutExons"])
+				subprocess.call([GTF2GENEPRED, gtfFile, genePredFile_fromGff, "-genePredExt", "-allErrors", "-ignoreGroupsWithoutExons"])
 	if args.genePred:
 		if not os.path.isfile(args.genePred):
 			errorMsg+="\n genePred file: " + args.genePred + " not found.\n"
