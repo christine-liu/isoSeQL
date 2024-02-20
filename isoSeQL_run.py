@@ -7,6 +7,7 @@ import isoSeQL_db as sqlDB
 import isoSeQL_parse as fileParse
 import sys
 import timeit
+import subprocess
 
 def main():
 	parser=argparse.ArgumentParser(description="parse SQANTI3 output to add isoforms to database")
