@@ -34,10 +34,10 @@ def main():
 			if not os.path.isfile(args.gff):
 				errorMsg+="\n gff file: " + args.gff + " not found.\n"
 			else:
-				gtfFile=os.path.dirname(os.path.realpath(args.db)) + os.path.basename(args.gff) + ".gtf"
+				gtfFile=os.path.dirname(os.path.realpath(args.db)) + "/" + os.path.basename(args.gff) + ".gtf"
 				print("gtfFile path: " + gtfFile)
 				subprocess.call([GFFREAD, args.gff, '-T', '-o', gtfFile])
-				genePredFile_fromGff=os.path.dirname(os.path.realpath(args.db)) + os.path.basename(args.gff) + ".genePred"
+				genePredFile_fromGff=os.path.dirname(os.path.realpath(args.db)) + "/" + os.path.basename(args.gff) + ".genePred"
 				print("genePredfile path: " + genePredFile_fromGff)
 				subprocess.call([GTF2GENEPRED, gtfFile, genePredFile_fromGff, "-genePredExt", "-allErrors", "-ignoreGroupsWithoutExons"])
 	if args.genePred:
@@ -66,14 +66,14 @@ def main():
 	else:
 		scInfo=None
 		UMIs=None
-	#if not os.path.isfile(args.db):
+	if not os.path.isfile(args.db):
 		sqlDB.make_db(args.db)
 	sampleID=sqlDB.addSampleData(args.db, args.sampleConfig)
 	expID=sqlDB.addExpData(args.db, args.expConfig, sampleID)
 	if expID == "Already in database":
 		print("\n***EXIT***\nExperiment and its data have already been added into this database. No isoforms have been added.\n**********\n")
 		sys.exit()
-	#else:
+	else:
 		sqlDB.addIsoforms(args.db, classifInfo, genePredInfo, expID, scInfo, UMIs)
 
 
