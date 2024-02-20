@@ -16,14 +16,30 @@ def main():
 	parser.add_argument("--expConfig", help="path to exp config file")
 	parser.add_argument("--db", help="path to database")
 	parser.add_argument("--sc", default=None, help='path to annotated csv')
-	print(os.path.realpath(__file__))
-	args=parser.parse_args()
+        parser.add_argument("--gff", default=None, help='path to gff from pigeon'))
+	pkgDir=os.path.dirname(os.path.realpath(__file__))
+	GTF2GENEPRED=os.path.join(pkgDir, "gtfToGenePred")
+        GFFREAD="gffread"
+
+        args=parser.parse_args()
 	#check for file existence
 	errorMsg=""
 	if not os.path.isfile(args.classif):
 		errorMsg+="\nclassif file: " + args.classif + " not found.\n"
-	if not os.path.isfile(args.genePred):
-		errorMsg+="\ngenePred file: " + args.genePred + " not found.\n"
+        if args.genePred and args.gff:
+                errorMsg+"\ngenePred and gff provided. Please only choose one\n"
+        if not args.genePred:
+            if args.gff:
+                if not os.path.isfile(args.gff):
+                    errorMsg+="\n gff file: " + args.gff + " not found.\n"
+                else:
+                    gtfFile=os.path.dirname(os.path.realpath(args.db)) + args.gff + ".gtf"
+                    subprocess.call([GFFREAD, args.gff, '-T', '-o', gtfFile])
+                    genePredFile_fromGff=os.path.dirname(os.path.realpath(args.db)) + args.gff + ".genePred"
+                    subprocess.call([GTF2GENEPRED, gtfFile, genePred, "-genePredExt", "-allErrors", "-ignoreGroupsWithoutExons"])
+        if args.genePred:
+            if not os.path.isfile(args.genePred):
+                errorMsg+="\n genePred file: " + args.genePred + " not found.\n"
 	if not os.path.isfile(args.sampleConfig):
 		errorMsg+="\nsampleConfig file: " + args.sampleConfig + " not found.\n"
 	if not os.path.isfile(args.expConfig):
@@ -38,20 +54,23 @@ def main():
 		print("\nAll files located.\n")		
 
 	classifInfo=fileParse.parse_classification(args.classif)
-	genePredInfo=fileParse.parse_genePred(args.genePred)
+        if args.gff:
+            genePredInfo=fileParse.parse_genePred(genePredFile_fromGff)
+        elif args.genePred:
+	    genePredInfo=fileParse.parse_genePred(args.genePred)
 	if args.sc:
 		scInfo,UMIs=fileParse.parse_singleCell(args.sc)
 	else:
 		scInfo=None
 		UMIs=None
-	if not os.path.isfile(args.db):
+	#if not os.path.isfile(args.db):
 		sqlDB.make_db(args.db)
 	sampleID=sqlDB.addSampleData(args.db, args.sampleConfig)
 	expID=sqlDB.addExpData(args.db, args.expConfig, sampleID)
 	if expID == "Already in database":
 		print("\n***EXIT***\nExperiment and its data have already been added into this database. No isoforms have been added.\n**********\n")
 		sys.exit()
-	else:
+	#else:
 		sqlDB.addIsoforms(args.db, classifInfo, genePredInfo, expID, scInfo, UMIs)
 
 
