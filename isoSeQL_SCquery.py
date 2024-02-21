@@ -8,6 +8,7 @@ import datetime
 import argparse
 import plotly.graph_objects as go
 import plotly.io as pio
+import plotly.express as px
 import sys
 import timeit
 
@@ -162,13 +163,11 @@ def gene_FSM(db, exp, outPrefix, genes):
 			yaxis=dict(title_text="Proportion"),
 			barmode="stack",
 		)
-		for x in df_gene.tx.unique():
+		txList=df_gene.tx.unique()
+		txList.sort()
+		for x in txList:
 			plot_df=df_gene[df_gene.tx==x]
 			fig.add_trace(go.Bar(x=[plot_df.exp, plot_df.celltype],y=plot_df.Proportion,name=x))
-		total_label_g=gene_totals[gene_totals['gene']==g]
-		total_label_g['exp']='E'+total_label_g['exp'].astype(str)
-		total_labels=[{"x":x, "y":1.03, "text":total, "showarrow":False, "font_size":8, "textangle":45} for x, total in zip(total_label_g.exp, total_label_g.gene_total)]
-		fig.update_layout(annotations=total_labels)
 		fileName=outPrefix+"_FSMsc_"+g+".pdf"
 		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
