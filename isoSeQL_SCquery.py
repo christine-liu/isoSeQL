@@ -154,6 +154,7 @@ def gene_FSM(db, exp, outPrefix, genes):
 	for g in gene_list:
 		df_gene=ENST_sum[(ENST_sum["gene"]==g)]
 		fig = go.Figure()
+		pio.templates["simple_white"]["layout"]["colorway"]=px.colors.qualitative.Dark24+px.colors.qualitative.Light24
 		pio.full_figure_for_development(fig,warn=False)
 		fig.update_layout(
 			template="simple_white",
@@ -164,6 +165,10 @@ def gene_FSM(db, exp, outPrefix, genes):
 		for x in df_gene.tx.unique():
 			plot_df=df_gene[df_gene.tx==x]
 			fig.add_trace(go.Bar(x=[plot_df.exp, plot_df.celltype],y=plot_df.Proportion,name=x))
+		total_label_g=gene_totals[gene_totals['gene']==g]
+		total_label_g['exp']='E'+total_label_g['exp'].astype(str)
+		total_labels=[{"x":x, "y":1.03, "text":total, "showarrow":False, "font_size":8, "textangle":45} for x, total in zip(total_label_g.exp, total_label_g.gene_total)]
+		fig.update_layout(annotations=total_labels)
 		fileName=outPrefix+"_FSMsc_"+g+".pdf"
 		fig.write_image(fileName)
 		print("FSM read proportions plot saved: " + fileName)
