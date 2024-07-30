@@ -30,7 +30,7 @@ For most queries, an "experiment list" is used as an input. This is a text file 
 
 ### How many reads/isoforms/genes were detected in each of my samples?
 ```
-python /path/to/isoSeQL/isoSeQL_query.py geneCounts --db /path/to/output/example.db --exp /path/to/output/expList_all --out /path/to/output/example_genCounts.txt
+python /path/to/isoSeQL/isoSeQL_query.py genCounts --db /path/to/output/example.db --exp /path/to/output/expList_all --out /path/to/output/example_genCounts.txt
 ```
 outputs a table with the number of genes, variable end and common junction isoforms, how many were annotated as "novel" isoforms, and how many reads were detected in each exp.
 
