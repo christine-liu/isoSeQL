@@ -80,35 +80,35 @@ lima /outdir/sample_isoSeqccs.bam /path/to/primers.fa /outdir/sample_isoSeqccs_d
 This outputs sample_isoSeqccs_demux.bam (bam of full-length, properly oriented reads)
 
 ### Refine full-length reads
-(isoseq)[https://isoseq.how] refine is used to trim polyA tails and remove concatemeric sequences
+[isoseq](https://isoseq.how) refine is used to trim polyA tails and remove concatemeric sequences
 ```
 isoseq refine --require-polya /outdir/sample_isoSeqccs_demux.Primer_5p--Primer_3p.bam /path/to/primers.fa /outdir/sample_isoSeqccs_demux_flnc.bam
 ```
 This outputs sample_isoSeqccs_demux_flnc.bam (bam of full-length, non-concatemeric (FLNC) reads)
 
 ### Cluster similar sequences
-(isoseq)[https://isoseq.how] cluster2 generates clusters of isoforms with the support of at least 2 FLNC reads
+[isoseq](https://isoseq.how) cluster2 generates clusters of isoforms with the support of at least 2 FLNC reads
 ```
 isoseq cluster2 /outdir/sample_isoSeqccs_demux_flnc.bam /outdir/sample_isoSeqccs_demux_flnc_cluster.bam
 ```
 This outputs sample_isoSeqccs_demux_flnc_cluster.bam, sample_isoSeqccs_demux_flnc_cluster.hq.fasta.gz (isoforms with predicted accuracy >= 0.99), sample_isoSeqccs_demux_flnc_cluster.lq.fasta.gz (isoforms with predicted accuracy < 0.99)
 
 ### Map to the reference genome
-(pbmm2)[https://github.com/PacificBiosciences/pbmm2] is a wrapper for minimap2 that has sets of recommended parameters that support PacBio data alignment.
+[pbmm2](https://github.com/PacificBiosciences/pbmm2) is a wrapper for minimap2 that has sets of recommended parameters that support PacBio data alignment.
 ```
 pbmm2 align --preset ISOSEQ -G 2500000 --sort /path/to/reference.fa /outdir/sample_isoSeqccs_demux_flnc_cluster.bam /outdir/sample_isoSeqccs_demux_flnc_cluster_mapped.bam
 ```
 This outputs sample_isoSeqccss_demux_flnc_cluster_mapped.bam
 
 ### Collapse redundant transcripts
-(isoseq)[https://isoseq.how] collapse is used to generate a set of unique isoforms. Previously (cDNA_Cupcake)[https://github.com/Magdoll/cDNA_Cupcake] was used for this step, and while it is deprecated, it still works well, but significantly slower than isoseq collapse.
+[isoseq](https://isoseq.how) collapse is used to generate a set of unique isoforms. Previously (cDNA_Cupcake)[https://github.com/Magdoll/cDNA_Cupcake] was used for this step, and while it is deprecated, it still works well, but significantly slower than isoseq collapse.
 ```
 isoseq collapse /outdir/sample_isoSeqccs_demux_flnc_cluster_mapped.bam /outdir/sample_isoSeqccs/demux_flnc.bam /outdir/sample_isoSeqccs_demux_flnc_cluster_mapped_collapsed.gff
 ```
 This outputs sample_isoSeqccs_demux_flnc_cluster_mapped_collapsed.gff and sample_isoSeq_demux_flnc_cluster_mapped_collapsed.flnc_count.txt.
 
 ### Annotate and filter isoforms using SQANTI3
-As mentioned in the Motivation/Origin Story, I made some modifications to SQANTI3 to add some additional annotation details about novel not in catalog (NNC) isoforms - specifically which features present in the isoform make it deviate from the known, reference isoforms. These modifications and features are described in a paper that is currently under review, which I will link upon publication. This modified version of SQANTI3 is available (here)[https://github.com/christine-liu/SQANTI3/tree/SQANTICL]. 
+As mentioned in the Motivation/Origin Story, I made some modifications to SQANTI3 to add some additional annotation details about novel not in catalog (NNC) isoforms - specifically which features present in the isoform make it deviate from the known, reference isoforms. These modifications and features are described in a paper that is currently under review, which I will link upon publication. This modified version of SQANTI3 is available [here](https://github.com/christine-liu/SQANTI3/tree/SQANTICL). 
 ```
 python /path/to/SQANTI3/sqanti3_qc.py /outdir/sample_isoSeqccs_demux_flnc_cluster_mapped_collapsed.gff /path/to/annotation.gtf /path/to/reference.fa --genename --report skip --fl_count /outdir/sample_isoSeq_demux_flnc_cluster_mapped_collapsed.flnc_count.txt
 
