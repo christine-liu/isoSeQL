@@ -6,6 +6,7 @@ SQANTI3: https://github.com/ConesaLab/SQANTI3
 
 # Latest Updates
 (October 7, 2024) isoSeQL v1.0.0 official release tagged on Github
+
 (July 13, 2023) isoSeQL v1.0.0 is now live!
 
 # Motivation (Origin Story)
