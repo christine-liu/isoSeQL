@@ -60,7 +60,7 @@ _experiment (exp)_ vs _sample_ - I wanted to be able to link together two differ
 
 # How to use isoSeQL
 
-## Upstream data analysis (before input into isoSeQL)
+## Upstream bulk Iso-Seq data analysis (before input into isoSeQL)
 I've listed out the steps required to process samples before they are analyzed using isoSeQL. This workflow generally follows the [recommendations from PacBio](https://isoseq.how/) as of September 2024 and requires additional packages to be installed. Please refer to their workflow for additional details.
 
 ### Generating HiFi reads
