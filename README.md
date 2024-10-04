@@ -1,5 +1,5 @@
 # isoSeQL
-[isoSeQL logo](images/isoSeQL_logo.png)
+![isoSeQL logo](images/isoSeQL_logo.png)
 Database tool for comparing across many Iso-Seq runs analyzed through SQANTI3
 
 SQANTI3: https://github.com/ConesaLab/SQANTI3
