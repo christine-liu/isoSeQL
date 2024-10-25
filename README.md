@@ -102,7 +102,7 @@ pbmm2 align --preset ISOSEQ -G 2500000 --sort /path/to/reference.fa /outdir/samp
 This outputs sample_isoSeqccss_demux_flnc_cluster_mapped.bam
 
 ### Collapse redundant transcripts
-[isoseq](https://isoseq.how) collapse is used to generate a set of unique isoforms. Previously (cDNA_Cupcake)[https://github.com/Magdoll/cDNA_Cupcake] was used for this step, and while it is deprecated, it still works well, but significantly slower than isoseq collapse.
+[isoseq](https://isoseq.how) collapse is used to generate a set of unique isoforms. Previously [cDNA_Cupcake](https://github.com/Magdoll/cDNA_Cupcake) was used for this step, and while it is deprecated, it still works well, but significantly slower than isoseq collapse.
 ```
 isoseq collapse /outdir/sample_isoSeqccs_demux_flnc_cluster_mapped.bam /outdir/sample_isoSeqccs/demux_flnc.bam /outdir/sample_isoSeqccs_demux_flnc_cluster_mapped_collapsed.gff
 ```
