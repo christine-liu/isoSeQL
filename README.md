@@ -5,7 +5,7 @@ Database tool for comparing across many Iso-Seq runs analyzed through SQANTI3
 SQANTI3: https://github.com/ConesaLab/SQANTI3
 
 # Latest Updates
-(January 11, 2026) isoSeQL manuscript is now on Bionformatics! [link](doi.org/10.1093/bioinformatics/btaf680)
+(January 11, 2026) isoSeQL manuscript is now on Bioinformatics! [link](doi.org/10.1093/bioinformatics/btaf680)
 
 (October 7, 2024) isoSeQL v1.0.0 official release tagged on Github
 
