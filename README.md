@@ -5,6 +5,8 @@ Database tool for comparing across many Iso-Seq runs analyzed through SQANTI3
 SQANTI3: https://github.com/ConesaLab/SQANTI3
 
 # Latest Updates
+(January 11, 2026) isoSeQL manuscript is now on Bionformatics! [link](doi.org/10.1093/bioinformatics/btaf680)
+
 (October 7, 2024) isoSeQL v1.0.0 official release tagged on Github
 
 (July 13, 2023) isoSeQL v1.0.0 is now live!
@@ -17,7 +19,7 @@ I want to acknowledge that many other tools are being developed, and the long-re
 Happy analyzing!
 
 # How to cite isoSeQL
-The isoSeQL manuscript is currently in preparation to be submitted. A bioRxiv version may be available soon
+Liu, C.S., Chun, J.C. isoSeQL: comparing long-read isoforms across multiple datasets. *Bioinnformatics*. Volume 42, Issue 1, January 2026, doi.org/10.1093/bioinformatics/btaf680
 
 # Installation
 isoSeQL was developed using python 3.9.6
